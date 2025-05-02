@@ -1,0 +1,6 @@
+{
+  "name": "resume-refresh-api",
+  "version": "1.0.0",
+  "main": "api/refresh-resume.js",
+  "license": "MIT"
+}
