@@ -2,5 +2,12 @@
   "version": 2,
   "builds": [
     { "src": "api/refresh-resume.js", "use": "@vercel/node" }
+  ],
+  "routes": [
+    {
+      "src": "/api/refresh-resume",
+      "dest": "/api/refresh-resume.js",
+      "methods": ["POST", "OPTIONS"]
+    }
   ]
 }
