@@ -1,8 +1,10 @@
 import OpenAI from 'openai'
+import buildPrompt from './prompt.js'
 
 const client = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY
 })
+
 
 module.exports = async (req, res) => {
   // Set CORS headers
@@ -26,11 +28,18 @@ module.exports = async (req, res) => {
     })
   }
 
-  console.log('Request received:', req.method, req.url)
-  console.log('Request body:', req.body)
+  console.log('Received fields:', {
+    jobTitle: !!jobTitle,
+    industry: !!industry,
+    resumeText: resumeText?.substring(0, 50) + '...',
+    jobDescription: !!jobDescription,
+    relevantExperience: !!relevantExperience
+  })
 
   try {
-    const { jobTitle, industry, resumeText } = req.body
+    const { jobTitle, industry, resumeText, jobDescription, relevantExperience } = req.body
+    // jobTitle, industry, resumeText, jobDescription, relevantExperience
+    // TODO: include revision instructions ... or do we need to ?!?!?!?
 
     if (!jobTitle || !industry || !resumeText) {
       return res.status(400).json({
@@ -40,16 +49,14 @@ module.exports = async (req, res) => {
       })
     }
 
-    const prompt = `
-You are a professional resume writer. Rewrite the resume below for a role as a ${jobTitle} in the ${industry} industry. Use modern, ATS-friendly formatting and results-oriented language. Improve clarity, impact, and relevance.
-
-Resume:
-${resumeText}
-`
+    const prompt = buildPrompt(jobTitle, industry, resumeText, jobDescription, relevantExperience)
 
     const completion = await client.chat.completions.create({
       model: 'gpt-4o',
-      messages: [{ role: 'user', content: prompt }],
+      messages: [
+        { role: 'system', content: prompt.system },
+        { role: 'user', content: prompt.user }
+      ],
       temperature: 0.7
     })
 
