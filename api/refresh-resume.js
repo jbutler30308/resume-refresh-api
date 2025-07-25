@@ -28,18 +28,16 @@ module.exports = async (req, res) => {
     })
   }
 
-  console.log('Received fields:', {
-    jobTitle: !!jobTitle,
-    industry: !!industry,
-    resumeText: resumeText?.substring(0, 50) + '...',
-    jobDescription: !!jobDescription,
-    relevantExperience: !!relevantExperience
-  })
-
   try {
     const { jobTitle, industry, resumeText, jobDescription, relevantExperience } = req.body
-    // jobTitle, industry, resumeText, jobDescription, relevantExperience
-    // TODO: include revision instructions ... or do we need to ?!?!?!?
+
+    console.log('Received fields:', {
+      jobTitle: !!jobTitle,
+      industry: !!industry,
+      resumeText: resumeText?.substring(0, 50) + '...',
+      jobDescription: !!jobDescription,
+      relevantExperience: !!relevantExperience
+    })
 
     if (!jobTitle || !industry || !resumeText) {
       return res.status(400).json({
