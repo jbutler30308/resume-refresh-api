@@ -29,14 +29,15 @@ export default async (req, res) => {
   }
 
   try {
-    const { jobTitle, industry, resumeText, jobDescription, relevantExperience } = req.body
+    const { jobTitle, industry, resumeText, jobDescription, relevantExperience, customInstructions } = req.body
 
     console.log('Received fields:', {
       jobTitle: !!jobTitle,
       industry: !!industry,
       resumeText: resumeText?.substring(0, 50) + '...',
       jobDescription: !!jobDescription,
-      relevantExperience: !!relevantExperience
+      relevantExperience: !!relevantExperience,
+      customInstructions: !!customInstructions
     })
 
     if (!jobTitle || !industry || !resumeText) {
@@ -47,7 +48,7 @@ export default async (req, res) => {
       })
     }
 
-    const prompt = buildPrompt(jobTitle, industry, resumeText, jobDescription, relevantExperience)
+    const prompt = buildPrompt({ jobTitle, industry, resumeText, jobDescription, relevantExperience, customInstructions })
 
     const completion = await client.chat.completions.create({
       model: 'gpt-4o',
