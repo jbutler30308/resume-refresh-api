@@ -36,7 +36,7 @@ export default async (req, res) => {
       industry: !!industry,
       resumeText: resumeText?.substring(0, 50) + '...',
       jobDescription: !!jobDescription,
-      relevantExperience: !!relevantExperience,
+      relevantExperience: relevantExperience || false,
       customInstructions: !!customInstructions
     })
 
@@ -48,7 +48,7 @@ export default async (req, res) => {
       })
     }
 
-    const prompt = buildPrompt({ jobTitle, industry, resumeText, jobDescription, relevantExperience, customInstructions })
+    const prompt = buildPrompt({ jobTitle, industry, resumeText, jobDescription, relevantExperienceRequested: relevantExperience, customInstructions })
 
     const completion = await client.chat.completions.create({
       model: 'gpt-4o',

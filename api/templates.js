@@ -29,31 +29,48 @@ Write a 3–5 line professional summary tailored to a specific job and industry:
 
 Avoid generic phrases. Ensure the summary is concise, polished, and results-oriented.`;
 
+const relevantExperience = `## SECTION ONE-POINT-FIVE - RELEVANT EXPERIENCE
+
+Step 1: Extract only the following from the resume:
+- Job titles and responsibilities 
+- Specific tools/technologies mentioned
+- Any quantified results (numbers, percentages, timeframes)
+- Skills explicitly listed
+
+Step 2: Create up to 5 bullet points using ONLY the information from Step 1. If you cannot create any bullet points with the available information, do not output this section (suppress the header).
+
+Each bullet must reference specific resume content and cannot include:
+- Estimated numbers or ranges
+- Technologies not explicitly mentioned in resume or additional instructions
+- Responsibilities not directly stated in resume or additional instructions
+- Industry-standard assumptions about role duties
+`
+
 const skills = `## SECTION TWO - SKILLS:
   
 Extract 6–10 core competencies or skills that:
+- Align with the candidate’s experience.
+- Match the language of the job title/industry.
+- Include technical and soft skills (if relevant).
+- Avoid generic or outdated buzzwords.
 
-Align with the candidate’s experience.
-
-Match the language of the job title/industry.
-
-Include technical and soft skills (if relevant).
-
-Avoid generic or outdated buzzwords.
 Return in a clean, scannable bulleted format.`;
 
 const experience = `## SECTION THREE - EXPERIENCE:
   
-Rewrite or generate 3–5 achievement-based bullet points per job listed in the candidate's resume.
+Step 1: Extract only the following from the resume:
+- Job titles and responsibilities 
+- Specific tools/technologies mentioned
+- Any quantified results (numbers, percentages, timeframes)
+- Skills explicitly listed
 
-Each bullet must:
-  - Begin with a strong action verb.
-  - Quantify impact when possible.
-  - Reflect alignment with the target job and industry.
-  - Emphasize results, leadership, innovation, or growth.
-  - Include tools, techniques, or domains relevant to the target.
+Step 2: Create up to 5 bullet points using ONLY the information from Step 1. If you cannot create any bullet points with the available information, output "Insufficient information."
 
-  Use clear, professional language that avoids fluff.`;
+Each bullet must reference specific resume content and cannot include:
+- Estimated numbers or ranges
+- Technologies not explicitly mentioned in resume or additional instructions
+- Responsibilities not directly stated in resume or additional instructions
+- Industry-standard assumptions about role duties.`;
 
 
 const education = `## SECTION FOUR - EDUCATION:
@@ -76,6 +93,7 @@ List certifications and affiliations that:
 
 Include recognizable names (e.g., PMP, AWS, Fortune 500 brands).
 Omit expired or irrelevant certifications unless requested.
-Format in a clean, scannable list.`
+Format in a clean, scannable list.
+If no certification are present skip this section.`
 
-export { system, summary, skills, experience, education, certifications }
+export { system, summary, relevantExperience, skills, experience, education, certifications }
