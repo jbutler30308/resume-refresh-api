@@ -1,14 +1,14 @@
-import { system, summary, skills, experience, education, certifications } from './templates.js'
+import { system, summary, relevantExperience, skills, experience, education, certifications } from './templates.js'
 
 
-const buildPrompt = ({ jobTitle, industry, resumeText, jobDescription, relevantExperience, customInstructions }) => {
+const buildPrompt = ({ jobTitle, industry, resumeText, jobDescription, relevantExperienceRequested, customInstructions }) => {
 
   const jdPrompt = !!jobDescription ? `Tailor the resume to match the following job description: 
   === TARGET JOB DESCRIPTION ===
   ${jobDescription}
   === END TARGET JOB DESCRIPTION ===` : ''
 
-  const rePrompt = !!relevantExperience ? `Integrate references this relevant experience: 
+  const rePrompt = relevantExperienceRequested ? `Integrate references this relevant experience: 
   === RELEVANT EXPERIENCE ===
   ${relevantExperience}
   === END RELEVANT EXPERIENCE ===` : ''
@@ -34,6 +34,7 @@ ${ !!jdPrompt ? '- Aligning with keywords from the job description' : ''}
 Organize the resume as follows:
 
 1. SUMMARY
+${relevantExperienceRequested ? '1.5 RELEVANT EXPERIENCE' : ''}
 2. SKILLS
 3. EXPERIENCE
 4. EDUCATION
@@ -43,9 +44,9 @@ If there is no appropriate content for EDUCATION or CERTIFICATIONS do not includ
 
 ${instructionPrompt}
 
-Do not add introductory or concluding commentary - return only the resume.
-
 ${summary}
+
+${relevantExperience}
 
 ${skills}
 
@@ -54,6 +55,8 @@ ${experience}
 ${education}
 
 ${certifications}
+
+DO NOT add introductory or concluding commentary - return only the resume.
 `
 
   return { system, user: prompt }
