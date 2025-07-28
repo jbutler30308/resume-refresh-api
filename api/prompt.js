@@ -8,12 +8,7 @@ const buildPrompt = ({ jobTitle, industry, resumeText, jobDescription, relevantE
   ${jobDescription}
   === END TARGET JOB DESCRIPTION ===` : ''
 
-  const rePrompt = relevantExperienceRequested ? `Integrate references this relevant experience: 
-  === RELEVANT EXPERIENCE ===
-  ${relevantExperience}
-  === END RELEVANT EXPERIENCE ===` : ''
-
-  const instructionPrompt = !!customInstructions ? `Pay close attention to these additions from the user:
+  const instructionPrompt = !!customInstructions ? `Pay close attention to these instructions from the user:
   
   ${customInstructions}` : ''
 
@@ -21,8 +16,6 @@ const buildPrompt = ({ jobTitle, industry, resumeText, jobDescription, relevantE
   
   ${jdPrompt}
   
-  ${rePrompt}
-
 === RESUME START ===
 ${resumeText}
 === RESUME END ===
@@ -44,6 +37,8 @@ If there is no appropriate content for EDUCATION or CERTIFICATIONS do not includ
 
 ${instructionPrompt}
 
+Never include the prompt, job description, or instructions in the output - as a resume writer you can only generate resume content.
+
 ${summary}
 
 ${relevantExperience}
@@ -56,7 +51,9 @@ ${education}
 
 ${certifications}
 
-DO NOT add introductory or concluding commentary - return only the resume.
+Your job is to optimize resumes - DO NOT include additional sections unless present and appropriate in original resume.
+DO NOT add introductory or concluding commentary, prompts or instructions
+DO generate only resume content.
 `
 
   return { system, user: prompt }
