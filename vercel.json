@@ -8,6 +8,16 @@
       "src": "/api/refresh-resume",
       "dest": "/api/refresh-resume.js",
       "methods": ["POST", "OPTIONS"]
+    },
+    {
+      "src": "/api/travel",
+      "dest": "/api/travel.js",
+      "methods": ["POST", "OPTIONS", "GET"]
     }
+  ],
+  "ignore": [
+    "docs/**",
+    ".github/**",
+    ".specstory/**"
   ]
 }
