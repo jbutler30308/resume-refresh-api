@@ -308,7 +308,54 @@ M  vercel.json
 
 _**Assistant**_
 
+All staged changes have been committed with a detailed, Conventional Commits-compliant message summarizing the restructuring, new features, and documentation updates. Your repository is now up to date!
 
+---
+
+_**User**_
+
+I added an "ignore" array to `vercel.json` but the deployment failed with the following error:
+
+The `vercel.json` schema validation failed with the following message: should NOT have additional property `ignore`
+
+---
+
+_**Assistant**_
+
+The error occurs because the Vercel platform no longer supports the "ignore" property in `vercel.json`.  
+Instead, you should use a `.vercelignore` file in your project root.
+
+---
+
+## Solution
+
+1. **Remove the "ignore" property from `vercel.json`.**
+2. **Create a `.vercelignore` file** (if it doesn't exist) with the following contents:
+
+```
+docs/
+.github/
+.specstory/
+```
+
+This will ensure these folders are not deployed, but remain in your git repository.
+
+Would you like me to make these changes for you?
+
+---
+
+_**User**_
+
+Earlier, you said that "Add them to the ignore array in vercel.json (recommended) or to .vercelignore." Is this an outdated suggestion?
+
+---
+
+_**Assistant**_
+
+Yes, that was outdated. The "ignore" array in `vercel.json` is no longer supported by Vercel and will cause schema validation errors.  
+The correct and current approach is to use a `.vercelignore` file in your project root to exclude files and folders from deployment.
+
+Thank you for catching this—use only `.vercelignore` for this purpose going forward.
 
 ---
 
