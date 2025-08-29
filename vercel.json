@@ -14,10 +14,5 @@
       "dest": "/api/travel.js",
       "methods": ["POST", "OPTIONS", "GET"]
     }
-  ],
-  "ignore": [
-    "docs/**",
-    ".github/**",
-    ".specstory/**"
   ]
 }
