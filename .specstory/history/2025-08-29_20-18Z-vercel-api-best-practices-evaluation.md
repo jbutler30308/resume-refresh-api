@@ -359,3 +359,63 @@ Thank you for catching this—use only `.vercelignore` for this purpose going fo
 
 ---
 
+_**User**_
+
+Move the ignore entires in `vercel.json` to a new .vercelignore file
+
+---
+
+_**Assistant**_
+
+
+```
+
+```
+The unsupported "ignore" property has been removed from `vercel.json`, and the ignore entries have been moved to a new `.vercelignore` file. This will ensure those folders are excluded from Vercel deployments but remain in version control. Your setup now follows current Vercel best practices.
+
+---
+
+_**User**_
+
+I can run the app at get to the existing refresh-resume route, but I cannot access travel. Does the new route also need configuration in the "builds" property of `vercel.json`?
+
+---
+
+_**Assistant**_
+
+Yes, you need to add a build entry for every serverless function you want Vercel to deploy.  
+Currently, only `refresh-resume.js` is listed in the `"builds"` array.  
+To deploy the `/api/travel` route, add a build entry for `travel.js` as well.
+
+---
+
+### Example update for `vercel.json`:
+
+```json
+{
+  "version": 2,
+  "builds": [
+    { "src": "api/refresh-resume.js", "use": "@vercel/node" },
+    { "src": "api/travel.js", "use": "@vercel/node" }
+  ],
+  "routes": [
+    {
+      "src": "/api/refresh-resume",
+      "dest": "/api/refresh-resume.js",
+      "methods": ["POST", "OPTIONS"]
+    },
+    {
+      "src": "/api/travel",
+      "dest": "/api/travel.js",
+      "methods": ["POST", "OPTIONS", "GET"]
+    }
+  ]
+}
+```
+
+---
+
+Would you like me to update your `vercel.json` accordingly?
+
+---
+

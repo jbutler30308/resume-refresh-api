@@ -27,7 +27,7 @@ Instructions:
 - Recommend group-friendly dining, cafés, or entertainment when relevant.  
 `;
 
-  return { system, user: prompt , verification}
+  return { system, user: prompt, verification: verification({ groupSize, destination, dates })}
 }
 
 export default completePrompt;

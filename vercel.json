@@ -1,7 +1,8 @@
 {
   "version": 2,
   "builds": [
-    { "src": "api/refresh-resume.js", "use": "@vercel/node" }
+    { "src": "api/refresh-resume.js", "use": "@vercel/node" },
+    { "src": "api/travel.js", "use": "@vercel/node" }
   ],
   "routes": [
     {
