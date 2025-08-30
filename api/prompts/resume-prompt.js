@@ -1,4 +1,4 @@
-import { system, summary, relevantExperience, skills, experience, education, certifications } from './templates.js'
+import { system, summary, relevantExperience, skills, experience, education, certifications } from '../templates/resume-templates.js'
 
 
 const buildPrompt = ({ jobTitle, industry, resumeText, jobDescription, relevantExperienceRequested, customInstructions }) => {
