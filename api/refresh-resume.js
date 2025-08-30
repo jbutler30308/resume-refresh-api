@@ -1,5 +1,5 @@
 import OpenAI from 'openai'
-import buildPrompt from '../prompts/resume-prompt.js'
+import buildPrompt from './prompts/resume-prompt.js'
 
 const client = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY

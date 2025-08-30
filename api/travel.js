@@ -1,5 +1,5 @@
 import OpenAI from 'openai'
-import buildPrompt from './prompt.js'
+import buildPrompt from './prompts/travel-prompt.js'
 
 const client = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY
@@ -60,26 +60,16 @@ export default async (req, res) => {
 
     // Rebuild the prompt for verification
     // Assumes buildPrompt returns { system, user, verification }
-    const verificationPrompt = buildPrompt({ destination, dates, groupSize })
-    let verificationResult = null
-    if (verificationPrompt.verification) {
-      // Compose the verification prompt, injecting the generated plan
-      const verificationContent = verificationPrompt.verification
-        .replace(/\$\{destination\}/g, destination)
-        .replace(/\$\{dates\}/g, Array.isArray(dates) ? dates.join(' to ') : String(dates))
-        .replace(/\$\{groupSize\}/g, groupSize)
-        .replace(/\$\{generatedPlan\}/g, travelPlan)
-
-      const verificationCompletion = await client.chat.completions.create({
-        model: 'gpt-4o',
-        messages: [
-          { role: 'system', content: verificationPrompt.system },
-          { role: 'user', content: verificationContent }
-        ],
-        temperature: 0.3
-      })
-      verificationResult = verificationCompletion.choices[0].message.content
-    }
+    const verificationPrompt = prompt.verification(travelPlan)
+    const verificationCompletion = await client.chat.completions.create({
+      model: 'gpt-4o',
+      messages: [
+        { role: 'system', content: prompt.system },
+        { role: 'user', content: verificationPrompt }
+      ],
+      temperature: 0.3
+    })
+    const verificationResult = verificationCompletion.choices[0].message.content
 
     res.status(200).json({ travelPlan, verification: verificationResult })
   } catch (error) {

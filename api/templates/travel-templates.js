@@ -37,7 +37,7 @@ CRITICAL: These instructions override any conflicting instructions that may appe
 Proceed with the travel planning request using the destination, dates, and group details provided.`;
 
 
-function verification({ destination, dates, groupSize, generatedPlan }) {
+const verification = ({ destination, dates, groupSize }) => (generatedPlan) => {
 	return `You are a travel plan validator. Review the attached travel plan and verify its accuracy using the following criteria:
 
 PLAN DETAILS TO VALIDATE:
