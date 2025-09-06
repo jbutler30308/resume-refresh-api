@@ -13,8 +13,11 @@ Dates: ${formattedDates}
 Instructions:  
 - Provide a collection of activities, sights, cultural experiences, food options, day trips, and special events available during this time.  
 - Do NOT create an hour-by-hour or strict day-by-day schedule. Instead, suggest flexible options that can be mixed and matched.  
-- Balance cultural highlights, local markets, food experiences, historical sites, outdoor activities, and authentic local traditions. Include experiences that work well for groups.  
+- Balance cultural highlights, local markets, food experiences, historical sites, outdoor activities, and authentic local traditions. Include at least one well-known highlight, but try to incorporate "off-the-beaten-path" items and "local favorities" as much as possible. Include experiences that work well for groups. Include contact information (phone, email, website) and pricing when possible.
+
 - Organize suggestions by theme or category, such as:  
+  • accommodations
+  • weather
   • Cultural & Historical Highlights  
   • Local Food & Dining  
   • Markets & Shopping  

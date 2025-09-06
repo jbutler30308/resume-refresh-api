@@ -1,9 +1,18 @@
 {
   "name": "resume-refresh-api",
   "version": "1.0.0",
+  "packageManager": "pnpm@8.10.5",
   "main": "api/refresh-resume.js",
   "license": "MIT",
+  "scripts": {
+    "dev": "vercel dev",
+    "preinstall": "npx only-allow pnpm"
+  },
   "dependencies": {
+    "marked": "^16.2.1",
     "openai": "^4.97.0"
+  },
+  "devDependencies": {
+    "newman": "^6.2.1"
   }
 }
