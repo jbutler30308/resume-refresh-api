@@ -4,6 +4,7 @@
   "packageManager": "pnpm@8.10.5",
   "main": "api/refresh-resume.js",
   "license": "MIT",
+  "type": "module",
   "scripts": {
     "dev": "vercel dev",
     "preinstall": "npx only-allow pnpm"
