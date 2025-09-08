@@ -37,7 +37,20 @@ This repository contains the backend API for **Resume Refresh**, a Vercel-hosted
 - Never log or expose sensitive resume information.
 - Treat API routes as public endpoints; assume zero trust.
 
-## 4. Commit Message Guidelines
+## 4. Mandatory Planning Process
+
+**CRITICAL**: All development work must follow this planning process before any code implementation.
+
+### Plan-File Requirement
+
+1.  **Before Any Code Changes**: ALL feature requests, architectural changes, or significant modifications must begin with creating—or reusing—an appropriate plan-file in `docs/plans/`.
+2.  **User Confirmation Protocol**: When a user requests changes, first inspect `docs/plans/` for a relevant file. If one exists, ask the user to update it, create a new one, or proceed without one. If none exists, ask the user to create one or proceed without one. Honor the user's choice.
+3.  **Plan-File Naming Convention**: `NN.semantic-name.md` (e.g., `01.user-comments.md`).
+4.  **Required Plan Contents**: Problem Statement, Requirements, Technical Approach, Implementation Steps, Testing Strategy, Risks & Mitigation, Dependencies.
+5.  **Exceptions**: This process is not required for documentation updates or minor, single-line bug fixes.
+
+
+## 5. Commit Message Guidelines
 
 All commit messages must follow the [Conventional Commits](https://www.conventionalcommits.org/) specification, using clear and contextual messages. Example prefixes:
 
