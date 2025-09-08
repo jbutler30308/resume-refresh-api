@@ -1,0 +1,39 @@
+{
+  "meta": {
+    "destination": "string",
+    "dates": "YYYY-MM-DD to YYYY-MM-DD",
+    "groupSize": "integer",
+    "generated_at": "YYYY-MM-DD",
+    "sources": ["url", "..."]
+  },
+  "categories": {
+    "<category_name>": [
+      {
+        "id": "short-slug",
+        "name": "string",
+        "short_description": "string",
+        "address": "string or null",
+        "phone_e164": "string or null",
+        "phone_local": "string or null",
+        "email": "string or null",
+        "website": "url or null",
+        "price_type": "exact_price_per_person | price_range_per_person | price_note",
+        "price_value": "e.g. 35.00 (number) or [20.00,50.00] for range or null",
+        "currency": "ISO 4217 code",
+        "price_extraction_note": "string",
+        "confidence": 0.0,
+        "last_checked": "YYYY-MM-DD",
+        "source_urls": ["primary_url","secondary_url"]
+      }
+    ]
+  },
+  "top_contacts_vcards": [
+    {
+      "name":"string",
+      "tel":"+E.164",
+      "email":"string or null",
+      "website":"url or null",
+      "note":"string"
+    }
+  ]
+}

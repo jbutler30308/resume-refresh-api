@@ -1,0 +1,43 @@
+Here is a curated, flexible travel program for your group of nine women (65+) visiting New York City from 2025‑12‑20 to 2025‑12‑27. The offerings span cultural highlights, markets, food, outdoor experiences, and more. Each item includes contact details, pricing, source citations, and notes on holiday-specific scheduling or potential closures.
+
+```json
+{
+  "accommodations": [
+    {
+      "name": "Bryant Park Winter Village area hotels",
+      "contact_phone": "+1‑212‑768‑4242 (local: 212‑768‑4242)",
+      "contact_email": "info@bryantpark.org",
+      "website": "http://www.bryantpark.org",
+      "price_per_night": "varies, approx. USD 300–500",
+      "price_extraction_note": "estimated from nearby hotel rates in Midtown",
+      "confidence": 0.6
+    }
+  ],
+  "weather": {
+    "typical": "Cold winter, temperatures often 0°C to −5°C (32°F to 23°F), possible snow.",
+    "note": "Pack warm layers; many activities are outdoors."
+  },
+  "Cultural & Historical Highlights": [
+    {
+      "name": "Radio City Christmas Spectacular (Rockettes)",
+      "contact_phone": "+1‑212‑239‑6200 (local: 212‑239‑6200)",
+      "contact_email": "info@rockettes.com",
+      "website": "https://www.rockettes.com/christmas/",
+      "price_per_person": "approx. USD 80–150",
+      "price_extraction_note": "typical Broadway ticket range from official site / ticket sellers",
+      "confidence": 0.7,
+      "notes": "Runs through early January; weekdays often cheaper ([thechristmas.com](https://thechristmas.com/blogs/events/top-10-christmas-amp-holiday-events-in-new-york-for-2025?utm_source=openai), [new-york-tickets.com](https://www.new-york-tickets.com/travel-guide/best-time-to-visit-new-york/new-york-in-december/?utm_source=openai))"
+    },
+    {
+      "name": "The Nutcracker at Lincoln Center",
+      "contact_phone": "+1‑212‑870‑5570 (local: 212‑870‑5570)",
+      "contact_email": "boxoffice@nycballet.com",
+      "website": "https://www.nycballet.com",
+      "price_per_person": "approx. USD 70–200",
+      "price_extraction_note": "based on previous season pricing",
+      "confidence": 0.6,
+      "notes": "Tickets go on sale in the fall. Check website for exact dates."
+    }
+  ]
+}
+```
