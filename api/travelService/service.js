@@ -29,6 +29,60 @@ export function safeJsonParse(jsonText) {
   }
 }
 
+function renderPrice(item) {
+  if (!item) return '';
+  let { price_type, price_value, currency, price_extraction_note } = item;
+
+  let priceHtml = ''; // To hold the main price string
+
+  // Fallback assignment for price_type (still useful)
+  if (!price_type) {
+    if (Array.isArray(price_value) && price_value.length === 2) {
+      price_type = 'price_range_per_person';
+    } else if (typeof price_value === 'number') {
+      price_type = 'exact_price_per_person';
+    }
+  }
+
+  const currencySymbol = currency === 'USD' ? '$' : '';
+  const formattedCurrency = currency || '';
+
+  // First, try to render the structured price data
+  switch (price_type) {
+    case 'exact_price_per_person':
+      if (typeof price_value === 'number') {
+        priceHtml = `<div class=\"price\">${currencySymbol}${price_value.toFixed(2)} ${formattedCurrency} per person</div>`;
+      }
+      break;
+    case 'price_range_per_person':
+      if (Array.isArray(price_value) && price_value.length === 2) {
+        priceHtml = `<div class=\"price\">${currencySymbol}${price_value[0].toFixed(2)} - ${currencySymbol}${price_value[1].toFixed(2)} ${formattedCurrency} per person</div>`;
+      }
+      break;
+  }
+
+  // If structured rendering failed, try the new fallback
+  if (!priceHtml) {
+    const knownPriceFields = ['price_type', 'price_value', 'price_extraction_note'];
+    const unknownPriceKey = Object.keys(item).find(key => key.startsWith('price_') && !knownPriceFields.includes(key));
+
+    if (unknownPriceKey && item[unknownPriceKey]) {
+      priceHtml = `<div class=\"price\">${escapeHtml(item[unknownPriceKey])}</div>`;
+    }
+  }
+  
+  // If still no price, and price_value is a string, use it.
+  if (!priceHtml && typeof price_value === 'string') {
+      priceHtml = `<div class=\"price\">${escapeHtml(price_value)}</div>`;
+  }
+
+
+  // Always render the note if it exists
+  const noteHtml = price_extraction_note ? `<div class=\"price-note\">${escapeHtml(price_extraction_note)}</div>` : '';
+
+  return priceHtml + noteHtml;
+}
+
 // Very small renderer for JSON -> HTML string (server-side)
 function renderParsedJsonAsHtml(parsed) {
   if (!parsed) return '';
@@ -42,11 +96,12 @@ function renderParsedJsonAsHtml(parsed) {
       out += `<article class="item card">
         <h3>${escapeHtml(it.name || 'Untitled')}</h3>
         <div class="meta small-muted">${escapeHtml(it.type || '')} ${it.availability ? ' • ' + escapeHtml(it.availability) : ''}</div>
-        <p>${escapeHtml(it.short_description || it.price_extraction_note || '')}</p>
+        <p>${escapeHtml(it.short_description || '')}</p>
+        ${renderPrice(it)}
         <div class="contacts">`;
       if (it.phone_e164 || it.contact_phone) {
         const phone = it.phone_e164 || it.contact_phone;
-        out += `<a class="tel" href="tel:${escapeHtml(phone.replace(/[^+0-9]/g,''))}">${escapeHtml(phone)}</a>`;
+        out += `<a class="tel" href="tel:${escapeHtml(phone.replace(/[^+0-9]/g, ''))}">${escapeHtml(phone)}</a>`;
       }
       if (it.email) {
         out += ` <a class="email" href="mailto:${escapeHtml(it.email)}">${escapeHtml(it.email)}</a>`;
@@ -66,11 +121,11 @@ function renderParsedJsonAsHtml(parsed) {
     out += `<section class="top-contacts"><h2>Top contacts</h2>`;
     parsed.top_contacts_vcards.forEach(c => {
       const slug = slugify(c.name || 'contact', { lower: true, strict: true });
-      const tel = c.tel ? c.tel.replace(/[^+0-9]/g,'') : '';
+      const tel = c.tel ? c.tel.replace(/[^+0-9]/g, '') : '';
       // vcard download endpoint is below
       out += `<div class="contact-card">
         <div class="name">${escapeHtml(c.name)}</div>
-        <div class="tel">${c.tel ? `<a href="tel:${escapeHtml(tel)}">${escapeHtml(c.tel)}</a>` : '—'}</div>
+        <div class="tel">${c.tel ? `<a href="tel:${escapeHtml(tel)}">${escapeHtml(tel)}</a>` : '—'}</div>
         <div class="email">${c.email ? `<a href="mailto:${escapeHtml(c.email)}">${escapeHtml(c.email)}</a>` : '—'}</div>
         <div class="vc-download"><a href="/vcf/${encodeURIComponent(slug)}" target="_blank">Download vCard</a></div>
       </div>`;
@@ -83,7 +138,7 @@ function renderParsedJsonAsHtml(parsed) {
 
 function renderSourceLinks(urls) {
   if (!urls) return '';
-  return urls.slice(0,2).map(u => {
+  return urls.slice(0, 2).map(u => {
     const href = u.startsWith('http') ? u : 'https://' + u;
     return `<a href="${escapeHtml(href)}" target="_blank" rel="noopener">source</a>`;
   }).join(' ');
@@ -91,22 +146,28 @@ function renderSourceLinks(urls) {
 
 function escapeHtml(s) {
   if (!s) return '';
-  return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  return String(s).replace(/[&<>"]|\/(?![\w\s]*>)/g, c => ({
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;',
+    '"': '&quot;',
+    "'": '&#39;'
+  }[c]));
 }
 
 function pretty(s) {
-  return s.replace(/_/g,' ').replace(/\b\w/g, c => c.toUpperCase());
+  return s.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
 }
 
 // Simple vCard generation store (in-memory) - in production store persistently
 const vcardStore = {};
 function makeVCard(contact) {
-  const lines = ['BEGIN:VCARD','VERSION:3.0'];
+  const lines = ['BEGIN:VCARD', 'VERSION:3.0'];
   if (contact.name) lines.push('FN:' + contact.name);
   if (contact.tel) lines.push('TEL;TYPE=WORK,VOICE:' + contact.tel);
   if (contact.email) lines.push('EMAIL;TYPE=INTERNET:' + contact.email);
   if (contact.website) lines.push('URL:' + contact.website);
-  if (contact.note) lines.push('NOTE:' + contact.note.replace(/\r?\n/g,' '));
+  if (contact.note) lines.push('NOTE:' + contact.note.replace(/\r?\n/g, ' '));
   lines.push('END:VCARD');
   return lines.join('\r\n');
 }
@@ -128,16 +189,18 @@ export const parseResponse = (rawText) => {
   const markdownHtml = md ? marked(md) : '';
 
   // Combine and sanitize
-  const combined = `<div class="travel-output">${jsonHtml}${markdownHtml}</div>`;
+  const combined = `<div class="travel-output">${markdownHtml}${htmlParts}${jsonHtml}</div>`;
   // Use sanitize-html to strip unsafe tags/attributes before sending to client
   const safe = sanitizeHtml(combined, {
-    allowedTags: sanitizeHtml.defaults.allowedTags.concat(['img', 'section', 'article', 'h2', 'h3']),
+    allowedTags: sanitizeHtml.defaults.allowedTags.concat(['section', 'article', 'h2', 'h3', 'div']),
     allowedAttributes: {
-      a: ['href','target','rel'],
-      img: ['src','alt']
+      a: ['class', 'href', 'target', 'rel'],
+      article: ['class'],
+      div: ['class'],
+      section: ['class']
     },
     allowedSchemesByTag: {
-      a: ['http','https','mailto','tel']
+      a: ['http', 'https', 'mailto', 'tel']
     }
   });
 
@@ -148,7 +211,7 @@ export const parseResponse = (rawText) => {
     .travel-output .small-muted { color:#6b7280; font-size:0.95rem; }
   </style>`;
 
-  return(css + safe);
+  return (css + safe);
 };
 
 // vCard endpoint: returns a .vcf for a contact slug (in production, map slug -> contact details)
@@ -163,4 +226,3 @@ export const parseResponse = (rawText) => {
 //   res.setHeader('Content-Disposition', `attachment; filename="${slug}.vcf"`);
 //   res.send(v);
 // });
-
