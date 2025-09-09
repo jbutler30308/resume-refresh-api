@@ -17,7 +17,7 @@
         "phone_local": "string or null",
         "email": "string or null",
         "website": "url or null",
-        "price_type": "exact_price_per_person | price_range_per_person | price_note",
+        "price_type": "exact_price_per_person | price_range_per_person | price_extraction_note",
         "price_value": "e.g. 35.00 (number) or [20.00,50.00] for range or null",
         "currency": "ISO 4217 code",
         "price_extraction_note": "string",

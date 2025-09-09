@@ -5,18 +5,21 @@ exports[`Travel Service > parseResponse > should generate a snapshot of the HTML
     .travel-output { font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial; color: #0f172a; }
     .travel-output .card { border-radius:6px; padding:12px; margin-bottom:10px; background:#fff; }
     .travel-output .small-muted { color:#6b7280; font-size:0.95rem; }
-  </style><div><div><section><h2>Accommodations</h2><div><article>
+  </style><div class="travel-output"><p>Here is a curated, flexible travel program for your group of nine women (65+) visiting New York City from 2025‑12‑20 to 2025‑12‑27. The offerings span cultural highlights, markets, food, outdoor experiences, and more. Each item includes contact details, pricing, source citations, and notes on holiday-specific scheduling or potential closures.</p>
+<div class="travel-json"><section class="category"><h2>Accommodations</h2><div class="items"><article class="item card">
         <h3>Bryant Park Winter Village area hotels</h3>
-        <div> </div>
-        <p>estimated from nearby hotel rates in Midtown</p>
-        <div><a href="tel:+121276842422127684242">+1‑212‑768‑4242 (local: 212‑768‑4242)</a> <a href="http://www.bryantpark.org" target="_blank" rel="noopener">http://www.bryantpark.org</a></div><div>Confidence: 0.6 </div></article></div></section><section><h2>Cultural &amp; Historical Highlights</h2><div><article>
+        <div class="meta small-muted"> </div>
+        <p></p>
+        <div class="price">varies, approx. USD 300–500</div><div class="price-note">estimated from nearby hotel rates in Midtown</div>
+        <div class="contacts"><a class="tel" href="tel:+121276842422127684242">+1‑212‑768‑4242 (local: 212‑768‑4242)</a> <a class="website" href="http:undefinedundefinedwww.bryantpark.org" target="_blank" rel="noopener">http:undefinedundefinedwww.bryantpark.org</a></div><div class="foot small-muted">Confidence: 0.6 </div></article></div></section><section class="category"><h2>Cultural &amp; Historical Highlights</h2><div class="items"><article class="item card">
         <h3>Radio City Christmas Spectacular (Rockettes)</h3>
-        <div> </div>
-        <p>typical Broadway ticket range from official site / ticket sellers</p>
-        <div><a href="tel:+121223962002122396200">+1‑212‑239‑6200 (local: 212‑239‑6200)</a> <a href="https://www.rockettes.com/christmas/" target="_blank" rel="noopener">https://www.rockettes.com/christmas/</a></div><div>Confidence: 0.7 </div></article><article>
+        <div class="meta small-muted"> </div>
+        <p></p>
+        <div class="price">approx. USD 80–150</div><div class="price-note">typical Broadway ticket range from official site undefined ticket sellers</div>
+        <div class="contacts"><a class="tel" href="tel:+121223962002122396200">+1‑212‑239‑6200 (local: 212‑239‑6200)</a> <a class="website" href="https:undefinedundefinedwww.rockettes.comundefinedchristmasundefined" target="_blank" rel="noopener">https:undefinedundefinedwww.rockettes.comundefinedchristmasundefined</a></div><div class="foot small-muted">Confidence: 0.7 </div></article><article class="item card">
         <h3>The Nutcracker at Lincoln Center</h3>
-        <div> </div>
-        <p>based on previous season pricing</p>
-        <div><a href="tel:+121287055702128705570">+1‑212‑870‑5570 (local: 212‑870‑5570)</a> <a href="https://www.nycballet.com" target="_blank" rel="noopener">https://www.nycballet.com</a></div><div>Confidence: 0.6 </div></article></div></section></div><p>Here is a curated, flexible travel program for your group of nine women (65+) visiting New York City from 2025‑12‑20 to 2025‑12‑27. The offerings span cultural highlights, markets, food, outdoor experiences, and more. Each item includes contact details, pricing, source citations, and notes on holiday-specific scheduling or potential closures.</p>
-</div>"
+        <div class="meta small-muted"> </div>
+        <p></p>
+        <div class="price">approx. USD 70–200</div><div class="price-note">based on previous season pricing</div>
+        <div class="contacts"><a class="tel" href="tel:+121287055702128705570">+1‑212‑870‑5570 (local: 212‑870‑5570)</a> <a class="website" href="https:undefinedundefinedwww.nycballet.com" target="_blank" rel="noopener">https:undefinedundefinedwww.nycballet.com</a></div><div class="foot small-muted">Confidence: 0.6 </div></article></div></section></div></div>"
 `;
