@@ -1,13 +1,8 @@
 import { describe, it, expect } from 'vitest';
 import { parseResponse, extractFencedJson, safeJsonParse } from './service.js';
-import fs from 'fs';
-import path from 'path';
-import { fileURLToPath } from 'url';
+import sampleLogData from './__fixtures__/sampleLog.txt?raw';
+import complexLogData from './__fixtures__/complexLog.txt?raw';
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
-const sampleLogData = fs.readFileSync(path.join(__dirname, '__fixtures__', 'sampleLog.txt'), 'utf-8');
 
 describe('Travel Service', () => {
   describe('extractFencedJson', () => {
@@ -44,10 +39,18 @@ describe('Travel Service', () => {
     });
   });
 
-  describe('parseResponse', () => {
+  describe('parseResponse (simple)', () => {
     it('should generate a snapshot of the HTML output', () => {
       const html = parseResponse(sampleLogData);
       expect(html).toMatchSnapshot();
     });
   });
+
+  describe('parseResponse (complex)', () => {
+    it('should generate a snapshot of the HTML output', () => {
+      const html = parseResponse(complexLogData);
+      expect(html).toMatchSnapshot();
+    });
+  });
 });
+
