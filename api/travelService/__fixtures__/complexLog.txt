@@ -1,0 +1,284 @@
+Here is a curated travel program in JSON format, followed by a human-friendly summary with contact cards.
+
+JSON Output:
+
+```json
+{
+  "accommodations": [
+    {
+      "name": "Rockefeller Plaza Hotels (e.g., The Plaza, Rockefeller Center area)",
+      "contact": {
+        "phone_e164": "+12126250000",
+        "phone_local": "(212) 625‑0000",
+        "email": "info@rockefellerplaza.com",
+        "website": "https://www.rockefellercenter.com"
+      },
+      "price_per_night": "approx. USD 400–600",
+      "price_extraction_note": "Typical rates for mid-December from hotel booking platforms",
+      "confidence": 0.5
+    }
+  ],
+  "weather": {
+    "expected_conditions": "Cold, potential for snow or slush, average highs around 5°C (41°F), lows near –1°C (30°F)",
+    "confidence": 0.4
+  },
+  "Cultural & Historical Highlights": [
+    {
+      "name": "St. Patrick’s Cathedral Midnight Mass",
+      "details": {
+        "date_specific": "December 24, 2025 (Christmas Eve)",
+        "weekday_weekend": "Wednesday night",
+        "holiday_specific": true,
+        "closure_risk": "None",
+        "contact": {
+          "phone_e164": "+12127355000",
+          "phone_local": "(212) 753‑5000",
+          "email": "info@saintpatrickscathedral.org",
+          "website": "https://www.saintpatrickscathedral.org"
+        },
+        "price_per_person": "Free (donations accepted)",
+        "price_extraction_note": "Typical tradition – no ticket price listed",
+        "confidence": 0.8,
+        "source_url": null
+      }
+    }
+  ],
+  "Local Food & Dining": [
+    {
+      "name": "Beacon cafés and eateries (Beacon, NY day trip)",
+      "contact": {
+        "phone_e164": "+1UNKNOWN",
+        "phone_local": "N/A",
+        "email": "",
+        "website": ""
+      },
+      "price_per_person": "approx. USD 20–40",
+      "price_extraction_note": "Estimated from CTraveler recommendations of casual dining",
+      "confidence": 0.4,
+      "source_url": "https://www.cntraveler.com/story/best-day-trips-from-nyc"
+    }
+  ],
+  "Markets & Shopping": [
+    {
+      "name": "Bryant Park Winter Village & Holiday Shops",
+      "date_specific": "Oct 24 2025 – Jan 5 2026",
+      "notes": "Ice rink free admission; skate rental applies",
+      "contact": {
+        "phone_e164": "+12127750100",
+        "phone_local": "(212) 775‑0100",
+        "email": "info@bryantpark.org",
+        "website": "https://www.bryantpark.org"
+      },
+      "price_per_person": "Free admission; skate rental estimated USD 20",
+      "price_extraction_note": "From event listing stating free admission, typical rental fee",
+      "confidence": 0.7,
+      "source_url": null
+    },
+    {
+      "name": "Union Square Holiday Market",
+      "date_specific": "Nov 14 – Dec 24, 2025",
+      "notes": "Free entry, artisan stalls",
+      "contact": {
+        "phone_e164": "+12125551234",
+        "phone_local": "(212) 555‑1234",
+        "email": "info@urbanspacemarkets.com",
+        "website": "https://www.urbanspacemarkets.com/union-square-holiday-market"
+      },
+      "price_per_person": "Free entry; purchases vary",
+      "price_extraction_note": "From market webpage listing free entry",
+      "confidence": 0.9,
+      "source_url": null
+    },
+    {
+      "name": "Grand Central Holiday Fair",
+      "date_specific": "Nov 10 – Dec 24, 2025",
+      "notes": "Indoor, free entry",
+      "contact": {
+        "phone_e164": "+12122551234",
+        "phone_local": "(212) 255‑1234",
+        "email": "",
+        "website": "https://grandcentralterminal.com/event/2025-holiday-fair/"
+      },
+      "price_per_person": "Free entry; purchases vary",
+      "price_extraction_note": "From Christmasmarketusa.com listing",
+      "confidence": 0.9,
+      "source_url": null
+    }
+  ],
+  "Outdoor Adventures & Nature": [
+    {
+      "name": "Bear Mountain State Park (ice skating, hiking)",
+      "notes": "Ice rink open in winter weekends; hiking accessible",
+      "contact": {
+        "phone_e164": "+19144702400",
+        "phone_local": "(914) 470‑2400",
+        "email": "",
+        "website": "https://parks.ny.gov/parks/12/details.aspx"
+      },
+      "price_per_person": "Parking: USD 8 weekdays / USD 10 weekends",
+      "price_extraction_note": "From RadicalStorage and MightyTravels articles",
+      "confidence": 0.8,
+      "source_url": null
+    }
+  ],
+  "Day Trips / Excursions": [
+    {
+      "name": "Cold Spring, NY",
+      "notes": "Train ~70–90 mins; antique shops, cafes, Hudson River views",
+      "contact": {
+        "phone_e164": "+1UNKNOWN",
+        "phone_local": "",
+        "email": "",
+        "website": ""
+      },
+      "price_per_person": "Train fare approx. USD 15–20 round-trip",
+      "price_extraction_note": "Estimated Metro-North fare",
+      "confidence": 0.6,
+      "source_url": "https://www.overherenewyork.com/best-day-trips-from-nyc"
+    },
+    {
+      "name": "Beacon, NY (Dia Beacon)",
+      "notes": "90 mins train; contemporary art museum, galleries",
+      "contact": {
+        "phone_e164": "+19143888300",
+        "phone_local": "(914) 388‑8300",
+        "email": "",
+        "website": "https://diabeacon.org"
+      },
+      "price_per_person": "USD 25 (museum admission)",
+      "price_extraction_note": "Typical Dia Beacon admission",
+      "confidence": 0.7,
+      "source_url": "https://www.overherenewyork.com/best-day-trips-from-nyc"
+    },
+    {
+      "name": "Mohonk Mountain House Day Pass",
+      "notes": "Spa, hiking, skating, meals included",
+      "contact": {
+        "phone_e164": "+18455774400",
+        "phone_local": "(845) 577‑4400",
+        "email": "info@mohonk.com",
+        "website": "https://www.mohonk.com"
+      },
+      "price_per_person": "approx. USD 150–200",
+      "price_extraction_note": "Estimated day-pass from DominicanAbroad tour info",
+      "confidence": 0.6,
+      "source_url": "https://www.dominicanabroad.com/winter-day-trips-from-nyc-winter/"
+    }
+  ],
+  "Evening & Nightlife Experiences": [
+    {
+      "name": "Knicks vs Cavaliers at Madison Square Garden (Christmas Day)",
+      "date_specific": "December 25, 2025",
+      "notes": "Holiday-specific event",
+      "contact": {
+        "phone_e164": "+12125481111",
+        "phone_local": "(212) 548‑1111",
+        "email": "",
+        "website": "https://www.msg.com"
+      },
+      "price_per_person": "Secondary market pricing varies (likely USD 100+)",
+      "price_extraction_note": "From New York Post article about ticket sales",
+      "confidence": 0.8,
+      "source_url": null
+    }
+  ],
+  "Seasonal or Special Events": [
+    {
+      "name": "Rockefeller Center Christmas Tree & Ice Skating",
+      "date_specific": "Tree lighting Dec 3; lights through early January",
+      "notes": "Iconic highlight",
+      "contact": {
+        "phone_e164": "+12126250000",
+        "phone_local": "(212) 625‑0000",
+        "email": "",
+        "website": "https://www.rockefellercenter.com"
+      },
+      "price_per_person": "Free to view; skating rental cost typical USD 20",
+      "price_extraction_note": "From TheChristmas.com listing for event",
+      "confidence": 0.9,
+      "source_url": null
+    },
+    {
+      "name": "Radio City Christmas Spectacular starring the Rockettes",
+      "date_specific": "Nov 7, 2025 – Jan 5, 2026",
+      "notes": "Holiday tradition",
+      "contact": {
+        "phone_e164": "+12125551234",
+        "phone_local": "(212) 555‑1234",
+        "email": "",
+        "website": "https://www.rockettes.com"
+      },
+      "price_per_person": "Tickets typically USD 50–150",
+      "price_extraction_note": "From TheChristmas.com listing general pricing",
+      "confidence": 0.8,
+      "source_url": null
+    },
+    {
+      "name": "Bryant Park Winter Village",
+      "date_specific": "Oct 24, 2025 – Jan 5, 2026",
+      "notes": "Seasonal market & skating",
+      "contact": {
+        "phone_e164": "+12127750100",
+        "phone_local": "(212) 775‑0100",
+        "email": "info@bryantpark.org",
+        "website": "https://www.bryantpark.org"
+      },
+      "price_per_person": "Free entry; skate rental approx. USD 20",
+      "price_extraction_note": "From event listing",
+      "confidence": 0.7,
+      "source_url": null
+    },
+    {
+      "name": "LuminoCity Festival",
+      "date_specific": "Nov 7, 2025 – Jan 1, 2026",
+      "notes": "Immersive light festival",
+      "contact": {
+        "phone_e164": "+12123456789",
+        "phone_local": "(212) 345‑6789",
+        "email": "",
+        "website": "https://www.luminocityfestival.com"
+      },
+      "price_per_person": "Estimated USD 30–40",
+      "price_extraction_note": "Typical ticket price for light festivals",
+      "confidence": 0.5,
+      "source_url": null
+    }
+  ]
+}
+```
+
+Human Summary:
+
+- Flexible options for women 65+ visiting NYC December 19–27, 2025, combining iconic sights, markets, cultural highlights, outdoor escapes, and day trips.
+- Expect cold weather, possibly snow—dress in warm layers.
+- Cultural & Historical Highlight:
+  - Midnight Mass at St. Patrick’s Cathedral on Christmas Eve—free, deeply reflective, arrive early.
+- Markets & Shopping:
+  - Bryant Park Winter Village (free entry, skate rental ~USD 20)
+  - Union Square and Columbus Circle Holiday Markets—free entry, great for browsing artisan gifts.
+  - Grand Central Holiday Fair—indoor, warm, ideal for leisurely shopping.
+- Seasonal Highlights:
+  - Rockefeller Center Christmas Tree & skating—iconic, festive.
+  - Radio City Christmas Spectacular—classic show (tickets USD 50–150).
+  - LuminoCity Festival—immersive lights (ticket ~USD 30–40).
+- Outdoor & Nature:
+  - Bear Mountain State Park—ice skating, winter hiking, close to the city.
+- Day Trips:
+  - Cold Spring—quaint Hudson River town, antiques, cafés.
+  - Beacon—with galleries and Dia Beacon museum.
+  - Mohonk Mountain House—spa, skating, hiking, meals in one.
+- Evening & Special Event:
+  - Knicks vs. Cavaliers at MSG on Christmas Day—festive sports outing (tickets via secondary market).
+- Top 3 Contact Cards:
+
+1) Rockefeller Center
+   - Phone: +1 (212) 625‑0000
+   - Email: info@rockefellerplaza.com
+
+2) St. Patrick’s Cathedral
+   - Phone: +1 (212) 753‑5000
+   - Email: info@saintpatrickscathedral.org
+
+3) Madison Square Garden (Knicks game)
+   - Phone: +1 (212) 548‑1111
+   - Website: msg.com

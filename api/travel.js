@@ -1,17 +1,21 @@
 import OpenAI from 'openai'
-import buildPrompt from './prompts/travel-prompt.js'
+import { zodTextFormat } from "openai/helpers/zod";
+import { z } from "zod";
 import { marked } from 'marked'
+import buildPrompt from './prompts/travel-prompt.js'
+import { parseResponse } from './travelService/service.js'
+import logger from './lib/logger.js';
+import schema from './templates/travel-schema.json' with { type: 'json' };
 
 const client = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY
 })
 
-
 export default async (req, res) => {
   // Set CORS headers
   res.setHeader('Access-Control-Allow-Credentials', true)
   res.setHeader('Access-Control-Allow-Origin', '*')
-  res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,POST')
+  res.setHeader('Access-Control-Allow-Methods', 'GET,POST')
   res.setHeader(
     'Access-Control-Allow-Headers',
     'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version'
@@ -30,12 +34,13 @@ export default async (req, res) => {
   }
 
   try {
-    const { destination, dates, groupSize } = req.body
+    const { destination, dates, groupSize, groupDetails } = req.body
 
     console.log('Received fields:', {
       destination: !!destination,
       dates: !!dates,
-      groupSize: !!groupSize
+      groupSize: !!groupSize,
+      groupDetails: !!groupDetails
     })
 
     if (!destination || !dates || !groupSize) {
@@ -46,7 +51,7 @@ export default async (req, res) => {
       })
     }
 
-    const prompt = buildPrompt({ destination, dates, groupSize })
+    const prompt = buildPrompt({ destination, dates, groupSize, groupDetails })
 
     const completion = await client.responses.create({
       model: 'gpt-4o',
@@ -57,7 +62,15 @@ export default async (req, res) => {
           type: 'web_search'
         }
       ],
-      temperature: 0.7
+      temperature: 0.7,
+      text: {
+        format: {
+          "name": "itinerary",
+          "type": "json_schema",
+          "strict": true,
+          "schema": schema,
+        }
+      }
     })
 
     const travelPlan = completion.output_text
@@ -75,9 +88,12 @@ export default async (req, res) => {
       temperature: 0.3
     })
     const verificationResult = verificationCompletion.output_text
-    const planHtml = marked.parse(travelPlan).replace(/\n/g, '')
+    logger.info('travelPlan: %j', travelPlan);
+    const planHtml = parseResponse(JSON.parse(travelPlan));
+    logger.info('planHtml: %j', planHtml);
+    logger.info('verificationResult: %j', verificationResult);
     const verificationHtml = marked.parse(verificationResult).replace(/\n/g, '')
-    res.status(200).json({ travelPlan: planHtml, verification: verificationHtml })
+    res.status(200).json({ travelPlan: planHtml, verification: verificationHtml, rawPlan: travelPlan, rawVerification: verificationResult })
   } catch (error) {
     console.error('Error details:')
     if (error.response) {

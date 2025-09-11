@@ -1,0 +1,13 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`renderContactInfo > should handle all missing info 1`] = `"<div class="contacts"></div>"`;
+
+exports[`renderContactInfo > should handle missing email 1`] = `"<div class="contacts"> <a class="website" href="https://example.com" target="_blank" rel="noopener">example.com</a></div>"`;
+
+exports[`renderContactInfo > should handle missing phone 1`] = `"<div class="contacts"> <a class="email" href="mailto:test@example.com">test@example.com</a> <a class="website" href="https://example.com" target="_blank" rel="noopener">example.com</a></div>"`;
+
+exports[`renderContactInfo > should handle missing website 1`] = `"<div class="contacts"> <a class="email" href="mailto:test@example.com">test@example.com</a></div>"`;
+
+exports[`renderContactInfo > should render full contact info 1`] = `"<div class="contacts"> <a class="email" href="mailto:test@example.com">test@example.com</a> <a class="website" href="https://example.com" target="_blank" rel="noopener">example.com</a></div>"`;
+
+exports[`renderContactInfo > should use contact_phone as a fallback for phone_e164 1`] = `"<div class="contacts"> <a class="email" href="mailto:test@example.com">test@example.com</a> <a class="website" href="https://example.com" target="_blank" rel="noopener">example.com</a></div>"`;

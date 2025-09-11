@@ -1,0 +1,188 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Travel Itinerary",
+  "description": "A structured travel itinerary.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "meta": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "destination": {
+          "type": "string"
+        },
+        "dates": {
+          "type": "string",
+          "description": "YYYY-MM-DD to YYYY-MM-DD"
+        },
+        "groupSize": {
+          "type": "integer"
+        },
+        "groupDetails": {
+          "type": "string"
+        },
+        "generated_at": {
+          "type": "string"
+        },
+        "sources": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "destination",
+        "dates",
+        "groupSize",
+        "groupDetails",
+        "generated_at",
+        "sources"
+      ]
+    },
+    "report": {
+      "type": "string"
+    },
+    "categories": {
+      "type": "object",
+      "description": "An object where each key is a category name (e.g., 'Restaurants', 'Activities') and the value is an array of items.",
+      "additionalProperties": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "id": {
+              "type": "string"
+            },
+            "name": {
+              "type": "string"
+            },
+            "short_description": {
+              "type": "string"
+            },
+            "address": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "phone_e164": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "phone_local": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "email": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "website": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "price_type": {
+              "enum": [
+                "exact_price_per_person",
+                "price_range_per_person",
+                "price_extraction_note"
+              ]
+            },
+            "price_value": {
+              "type": "string",
+              "description": "A string representing the price. Can be a single number (e.g., \"35.00\"), a range (e.g., \"20.00-50.00\"), or an empty string if not applicable."
+            },
+            "currency": {
+              "type": "string"
+            },
+            "price_extraction_note": {
+              "type": "string"
+            },
+            "confidence": {
+              "type": "number"
+            },
+            "last_checked": {
+              "type": "string"
+            },
+            "source_urls": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          "required": [
+            "id",
+            "name",
+            "short_description",
+            "address",
+            "phone_e164",
+            "phone_local",
+            "email",
+            "website",
+            "price_type",
+            "price_value",
+            "currency",
+            "price_extraction_note",
+            "confidence",
+            "last_checked",
+            "source_urls"
+          ]
+        }
+      }
+    },
+    "top_contacts_vcards": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "tel": {
+            "type": "string"
+          },
+          "email": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "website": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "note": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "name",
+          "tel",
+          "email",
+          "website",
+          "note"
+        ]
+      }
+    }
+  },
+  "required": [
+    "meta",
+    "report",
+    "top_contacts_vcards"
+  ]
+}

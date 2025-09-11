@@ -4,6 +4,7 @@
       max-width: 800px;
       margin: 0 auto;
     }
+
     #travelForm input:focus,
     #travelForm select:focus,
     #travelForm textarea:focus,
@@ -25,20 +26,29 @@
 
   <form id="travelForm">
     <label for="destination">Destination:</label><br />
-    <input type="text" id="destination" required style="width:100%; margin-bottom:10px;" aria-describedby="destinationHelp"><br />
+    <input type="text" id="destination" required style="width:100%; margin-bottom:10px;"
+      aria-describedby="destinationHelp"><br />
     <div id="destinationHelp" style="display:none;">Enter your travel destination</div>
 
     <label for="startDate">Start Date:</label><br />
-    <input type="date" id="startDate" required style="width:100%; margin-bottom:10px;" aria-describedby="startDateHelp"><br />
+    <input type="date" id="startDate" required style="width:100%; margin-bottom:10px;"
+      aria-describedby="startDateHelp"><br />
     <div id="startDateHelp" style="display:none;">Select your travel start date</div>
 
     <label for="endDate">End Date:</label><br />
-    <input type="date" id="endDate" required style="width:100%; margin-bottom:10px;" aria-describedby="endDateHelp"><br />
+    <input type="date" id="endDate" required style="width:100%; margin-bottom:10px;"
+      aria-describedby="endDateHelp"><br />
     <div id="endDateHelp" style="display:none;">Select your travel end date</div>
 
     <label for="groupSize">Group Size:</label><br />
-    <input type="number" id="groupSize" min="1" required style="width:100%; margin-bottom:10px;" aria-describedby="groupSizeHelp"><br />
+    <input type="number" id="groupSize" min="1" required style="width:100%; margin-bottom:10px;"
+      aria-describedby="groupSizeHelp"><br />
     <div id="groupSizeHelp" style="display:none;">Enter the number of people traveling</div>
+
+    <label for="groupDetails">Group Details:</label><br />
+    <input type="text" id="groupDetails" style="width:100%; margin-bottom:10px;"
+      aria-describedby="groupDetailsHelp"><br />
+    <div id="groupDetailsHelp" style="display:none;">Enter details about the group (ages, preferences, etc.)</div>
 
     <button id="submit" type="submit" style="padding: 10px 20px;">Get My Travel Plan</button>
   </form>
@@ -46,13 +56,18 @@
   <div id="loadingMsg" style="display:none; text-align:center; margin-top:20px; padding:20px;">
     <div style="display:inline-block; text-align:left;">
       <p>Planning your trip... This may take a few moments.</p>
-      <div style="border: 4px solid #f3f3f3; border-top: 4px solid #3498db; border-radius: 50%; width: 30px; height: 30px; animation: spin 2s linear infinite; margin: 10px auto;"></div>
+      <div
+        style="border: 4px solid #f3f3f3; border-top: 4px solid #3498db; border-radius: 50%; width: 30px; height: 30px; animation: spin 2s linear infinite; margin: 10px auto;">
+      </div>
     </div>
   </div>
 
   <div id="outputArea" style="display: none; margin-top: 10px;">
     <label for="travelPlanOutput">Your Travel Plan:</label><br />
-    <div id="travelPlanOutput" style="white-space: pre-wrap; margin-top: 20px; border:1px solid #ccc; padding:15px;"></div>
+    <div id="travelPlanOutput" style="margin-top: 20px; border:1px solid #ccc; padding:15px;"></div>
+    <label for="verificationOutput" style="margin-top:20px; display:block;">Verification:</label>
+    <div id="verificationOutput" style="margin-top: 10px; border:1px solid #eee; padding:12px; background:#fafafa;">
+    </div>
   </div>
 
   <div style="text-align:center; margin-top:15px;">
@@ -67,34 +82,50 @@
   const loadingMsg = document.getElementById("loadingMsg");
   const outputArea = document.getElementById("outputArea");
   const travelPlanOutput = document.getElementById("travelPlanOutput");
+  const verificationOutput = document.getElementById("verificationOutput");
   const copyBtn = document.getElementById("copyToClipboard");
 
   const travelPlanner = async () => {
     loadingMsg.style.display = "block";
-    travelPlanOutput.textContent = "";
+    travelPlanOutput.innerHTML = "";
+    if (verificationOutput) verificationOutput.innerHTML = "";
     copyBtn.style.display = "none";
 
     const destination = document.getElementById("destination").value.trim();
     const startDate = document.getElementById("startDate").value.trim();
     const endDate = document.getElementById("endDate").value.trim();
     const groupSize = document.getElementById("groupSize").value;
-
+    const groupDetails = document.getElementById("groupDetails").value;
     // Validation
-    if (!destination || !startDate || !endDate || !groupSize || isNaN(Number(groupSize)) || Number(groupSize) < 1) {
-      travelPlanOutput.textContent = "Please fill out all fields correctly.";
+    const isValidForm = (destination, startDate, endDate, groupSize) => {
+      return (
+      destination &&
+      startDate &&
+      endDate &&
+      groupSize &&
+      !isNaN(Number(groupSize)) &&
+      Number(groupSize) >= 1
+      );
+    };
+
+    if (!isValidForm(destination, startDate, endDate, groupSize)) {
+      travelPlanOutput.innerHTML = "Please fill out all fields correctly.";
       outputArea.style.display = "block";
       loadingMsg.style.display = "none";
+      if (verificationOutput) verificationOutput.innerHTML = "";
       return;
     }
 
     try {
-      const response = await fetch("https://resume-refresh-api.vercel.app/api/travel", {
+      // const response = await fetch("https://resume-refresh-api.vercel.app/api/travel", {
+      const response = await fetch("http://localhost:3000/api/travel", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ 
-          destination, 
+        body: JSON.stringify({
+          destination,
           dates: [startDate, endDate],
-          groupSize: Number(groupSize)
+          groupSize: Number(groupSize),
+          groupDetails
         })
       });
 
@@ -102,14 +133,19 @@
       if (data.travelPlan) {
         outputArea.style.display = "block";
         copyBtn.style.display = "inline-block";
-        travelPlanOutput.textContent = data.travelPlan;
+        travelPlanOutput.innerHTML = data.travelPlan;
         latestTravelPlan = data.travelPlan;
+        if (verificationOutput && data.verification) {
+          verificationOutput.innerHTML = data.verification;
+        }
       } else {
-        travelPlanOutput.textContent = "Sorry, there was a problem processing your travel plan.";
+        travelPlanOutput.innerHTML = "Sorry, there was a problem processing your travel plan.";
+        if (verificationOutput) verificationOutput.innerHTML = "";
       }
     } catch (err) {
       console.error("Error connecting to the travel service:", err);
-      travelPlanOutput.textContent = "Error connecting to the travel service. Please try again later.";
+      travelPlanOutput.innerHTML = "Error connecting to the travel service. Please try again later.";
+      if (verificationOutput) verificationOutput.innerHTML = "";
     } finally {
       loadingMsg.style.display = "none";
     }
@@ -121,13 +157,16 @@
   });
 
   const getTravelPlanText = () => {
-    return travelPlanOutput.textContent;
+    // Strip HTML tags for clipboard copy
+    const tempDiv = document.createElement('div');
+    tempDiv.innerHTML = travelPlanOutput.innerHTML;
+    return tempDiv.textContent || tempDiv.innerText || "";
   };
 
   copyBtn.addEventListener("click", () => {
     const plan = getTravelPlanText();
     const copySuccessMsg = document.getElementById("copySuccessMsg");
-    
+
     navigator.clipboard.writeText(plan)
       .then(() => {
         copySuccessMsg.style.display = "block";
