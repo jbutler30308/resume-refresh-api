@@ -1,8 +1,11 @@
 import OpenAI from 'openai'
-import buildPrompt from './prompts/travel-prompt.js'
+import { zodTextFormat } from "openai/helpers/zod";
+import { z } from "zod";
 import { marked } from 'marked'
+import buildPrompt from './prompts/travel-prompt.js'
 import { parseResponse } from './travelService/service.js'
 import logger from './lib/logger.js';
+import schema from './templates/travel-schema.json' with { type: 'json' };
 
 const client = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY
@@ -12,7 +15,7 @@ export default async (req, res) => {
   // Set CORS headers
   res.setHeader('Access-Control-Allow-Credentials', true)
   res.setHeader('Access-Control-Allow-Origin', '*')
-  res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,POST')
+  res.setHeader('Access-Control-Allow-Methods', 'GET,POST')
   res.setHeader(
     'Access-Control-Allow-Headers',
     'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version'
@@ -59,11 +62,18 @@ export default async (req, res) => {
           type: 'web_search'
         }
       ],
-      temperature: 0.7
+      temperature: 0.7,
+      text: {
+        format: {
+          "name": "itinerary",
+          "type": "json_schema",
+          "strict": true,
+          "schema": schema,
+        }
+      }
     })
 
     const travelPlan = completion.output_text
-    console.log(JSON.stringify(travelPlan))
 
     const verificationPrompt = prompt.verification(travelPlan)
     const verificationCompletion = await client.responses.create({
@@ -79,7 +89,7 @@ export default async (req, res) => {
     })
     const verificationResult = verificationCompletion.output_text
     logger.info('travelPlan: %j', travelPlan);
-    const planHtml = parseResponse(travelPlan);
+    const planHtml = parseResponse(JSON.parse(travelPlan));
     logger.info('planHtml: %j', planHtml);
     logger.info('verificationResult: %j', verificationResult);
     const verificationHtml = marked.parse(verificationResult).replace(/\n/g, '')

@@ -2,203 +2,198 @@
 
 exports[`Travel Service > parseResponse (complex) > should generate a snapshot of the HTML output 1`] = `
 "<style>
-      .travel-output { font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial; color: #0f172a;
-  }
-      .travel-output .card { border-radius:6px; padding:12px; margin-bottom:10px; background:#fff; }
-      .travel-output .small-muted { color:#6b7280; font-size:0.95rem; }
-    </style><div class="travel-output"><p>Here is a curated travel program in JSON format, followed by a human-friendly summary with contact cards.</p>
-<p>JSON Output:</p>
-<p>Human Summary:</p>
-<ul>
-<li>Flexible options for women 65+ visiting NYC December 19–27, 2025, combining iconic sights, markets, cultural highlights, outdoor escapes, and day trips.</li>
-<li>Expect cold weather, possibly snow—dress in warm layers.</li>
-<li>Cultural &amp; Historical Highlight:<ul>
-<li>Midnight Mass at St. Patrick’s Cathedral on Christmas Eve—free, deeply reflective, arrive early.</li>
-</ul>
-</li>
-<li>Markets &amp; Shopping:<ul>
-<li>Bryant Park Winter Village (free entry, skate rental ~USD 20)</li>
-<li>Union Square and Columbus Circle Holiday Markets—free entry, great for browsing artisan gifts.</li>
-<li>Grand Central Holiday Fair—indoor, warm, ideal for leisurely shopping.</li>
-</ul>
-</li>
-<li>Seasonal Highlights:<ul>
-<li>Rockefeller Center Christmas Tree &amp; skating—iconic, festive.</li>
-<li>Radio City Christmas Spectacular—classic show (tickets USD 50–150).</li>
-<li>LuminoCity Festival—immersive lights (ticket ~USD 30–40).</li>
-</ul>
-</li>
-<li>Outdoor &amp; Nature:<ul>
-<li>Bear Mountain State Park—ice skating, winter hiking, close to the city.</li>
-</ul>
-</li>
-<li>Day Trips:<ul>
-<li>Cold Spring—quaint Hudson River town, antiques, cafés.</li>
-<li>Beacon—with galleries and Dia Beacon museum.</li>
-<li>Mohonk Mountain House—spa, skating, hiking, meals in one.</li>
-</ul>
-</li>
-<li>Evening &amp; Special Event:<ul>
-<li>Knicks vs. Cavaliers at MSG on Christmas Day—festive sports outing (tickets via secondary market).</li>
-</ul>
-</li>
-<li>Top 3 Contact Cards:</li>
-</ul>
-<ol>
-<li><p>Rockefeller Center</p>
-<ul>
-<li>Phone: +1 (212) 625‑0000</li>
-<li>Email: <a href="mailto:info@rockefellerplaza.com">info@rockefellerplaza.com</a></li>
-</ul>
-</li>
-<li><p>St. Patrick’s Cathedral</p>
-<ul>
-<li>Phone: +1 (212) 753‑5000</li>
-<li>Email: <a href="mailto:info@saintpatrickscathedral.org">info@saintpatrickscathedral.org</a></li>
-</ul>
-</li>
-<li><p>Madison Square Garden (Knicks game)</p>
-<ul>
-<li>Phone: +1 (212) 548‑1111</li>
-<li>Website: msg.com</li>
-</ul>
-</li>
-</ol>
-<div class="travel-json"><section class="category"><h2>Accommodations</h2><div class="items"><article class="item card">
-        <h3>Rockefeller Plaza Hotels (e.g., The Plaza, Rockefeller Center area)</h3>
-        <div class="meta small-muted"> </div>
-        <p></p>
-        <div class="price">approx. USD 400–600</div><div class="price-note">Typical rates for mid-December from hotel booking platforms</div>
-        <div class="contacts"></div>
-        <div class="foot small-muted">Confidence: 0.5 </div>
-      </article></div></section><section class="category"><h2>Cultural &amp; Historical Highlights</h2><div class="items"><article class="item card">
-        <h3>St. Patrick’s Cathedral Midnight Mass</h3>
-        <div class="meta small-muted"> </div>
-        <p></p>
+    .travel-output { font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial; color: #0f172a; }
+    .travel-output .card { border-radius:6px; padding:12px; margin-bottom:10px; background:#fff; }
+    .travel-output .small-muted { color:#6b7280; font-size:0.95rem; }
+  </style><div class="travel-output"><section class="meta-info">
+      <h2>Trip Details</h2>
+      <p><strong>Destination:</strong> Las Vegas</p>
+      <p><strong>Dates:</strong> 2025-12-17 to 2025-12-27</p>
+      <p><strong>Group:</strong> 11 people (3 men, 8 women all in their 30s)</p>
+      <p>Report generated on 2025-09-11</p>
+    </section><p>Here’s a curated, flexible selection of activities, cultural highlights, and seasonal experiences for your Las Vegas trip in December 2025:</p>
+<p>• Holiday spectacles: Bellagio Conservatory’s winter display; Ice Rink at The Cosmopolitan; Magical Forest at Opportunity Village; Glittering Lights drive-through; Enchant Christmas winter wonderland; Palazzo Waterfall Atrium holiday décor. 
+• Live entertainment: Leona Lewis “A Starry Night” residency at The Venetian (Nov–Jan) and Zac Brown Band residency at Sphere early Dec. Plus holiday-themed shows and variety acts like Mavericks burlesque. 
+• Cultural &amp; arts: Visit The Beverly Theater (indie cinema and literary events), Bellagio Gallery of Fine Art, Neon Museum. 
+• Outdoor adventures: Hiking at Red Rock Canyon, Valley of Fire, Mt. Charleston snow play, Hoover Dam &amp; Boulder City, day trips to scenic parks. 
+• Markets &amp; local culture: Market in the Alley and Henderson Farmers Market; Town Square Santa photo opportunity. 
+• Sports &amp; special events: UFC 323 on Dec 6; NBA Cup Final on Dec 17 at T-Mobile Arena; Las Vegas Bowl on Dec 31 (just outside your dates). 
+• Weather note: December is mild during the day (mid‑60s °F) but chilly at night—bring layers. 
+• Flexibility: Mix cultural sites, nature outings, holiday lights, and shows. Note weekday/weekend or holiday-specific events (e.g., Magical Forest closed Dec 25; markets closed Dec 25).</p>
+<div class="travel-json"><section class="category"><h2>Weather</h2><div class="items"><article class="item card" id="weather1">
+        <h3>December Weather in Las Vegas</h3>
+        <p>Mild days (mid‑60s °F/~18 °C), chilly evenings (below 41 °F/~5 °C). Bring layers.</p>
         
-        <div class="contacts"></div>
-        <div class="foot small-muted">Confidence: n/a </div>
-      </article></div></section><section class="category"><h2>Local Food &amp; Dining</h2><div class="items"><article class="item card">
-        <h3>Beacon cafés and eateries (Beacon, NY day trip)</h3>
-        <div class="meta small-muted"> </div>
-        <p></p>
-        <div class="price">approx. USD 20–40</div><div class="price-note">Estimated from CTraveler recommendations of casual dining</div>
-        <div class="contacts"></div>
-        <div class="foot small-muted">Confidence: 0.4 </div>
-      </article></div></section><section class="category"><h2>Markets &amp; Shopping</h2><div class="items"><article class="item card">
-        <h3>Bryant Park Winter Village &amp; Holiday Shops</h3>
-        <div class="meta small-muted"> </div>
-        <p></p>
-        <div class="price">Free admission; skate rental estimated USD 20</div><div class="price-note">From event listing stating free admission, typical rental fee</div>
-        <div class="contacts"></div>
-        <div class="foot small-muted">Confidence: 0.7 </div>
-      </article><article class="item card">
-        <h3>Union Square Holiday Market</h3>
-        <div class="meta small-muted"> </div>
-        <p></p>
-        <div class="price">Free entry; purchases vary</div><div class="price-note">From market webpage listing free entry</div>
-        <div class="contacts"></div>
-        <div class="foot small-muted">Confidence: 0.9 </div>
-      </article><article class="item card">
-        <h3>Grand Central Holiday Fair</h3>
-        <div class="meta small-muted"> </div>
-        <p></p>
-        <div class="price">Free entry; purchases vary</div><div class="price-note">From Christmasmarketusa.com listing</div>
-        <div class="contacts"></div>
-        <div class="foot small-muted">Confidence: 0.9 </div>
-      </article></div></section><section class="category"><h2>Outdoor Adventures &amp; Nature</h2><div class="items"><article class="item card">
-        <h3>Bear Mountain State Park (ice skating, hiking)</h3>
-        <div class="meta small-muted"> </div>
-        <p></p>
-        <div class="price">Parking: USD 8 weekdays / USD 10 weekends</div><div class="price-note">From RadicalStorage and MightyTravels articles</div>
-        <div class="contacts"></div>
-        <div class="foot small-muted">Confidence: 0.8 </div>
-      </article></div></section><section class="category"><h2>Day Trips / Excursions</h2><div class="items"><article class="item card">
-        <h3>Cold Spring, NY</h3>
-        <div class="meta small-muted"> </div>
-        <p></p>
-        <div class="price">Train fare approx. USD 15–20 round-trip</div><div class="price-note">Estimated Metro-North fare</div>
-        <div class="contacts"></div>
-        <div class="foot small-muted">Confidence: 0.6 </div>
-      </article><article class="item card">
-        <h3>Beacon, NY (Dia Beacon)</h3>
-        <div class="meta small-muted"> </div>
-        <p></p>
-        <div class="price">USD 25 (museum admission)</div><div class="price-note">Typical Dia Beacon admission</div>
-        <div class="contacts"></div>
-        <div class="foot small-muted">Confidence: 0.7 </div>
-      </article><article class="item card">
-        <h3>Mohonk Mountain House Day Pass</h3>
-        <div class="meta small-muted"> </div>
-        <p></p>
-        <div class="price">approx. USD 150–200</div><div class="price-note">Estimated day-pass from DominicanAbroad tour info</div>
-        <div class="contacts"></div>
-        <div class="foot small-muted">Confidence: 0.6 </div>
-      </article></div></section><section class="category"><h2>Evening &amp; Nightlife Experiences</h2><div class="items"><article class="item card">
-        <h3>Knicks vs Cavaliers at Madison Square Garden (Christmas Day)</h3>
-        <div class="meta small-muted"> </div>
-        <p></p>
-        <div class="price">Secondary market pricing varies (likely USD 100+)</div><div class="price-note">From New York Post article about ticket sales</div>
-        <div class="contacts"></div>
-        <div class="foot small-muted">Confidence: 0.8 </div>
-      </article></div></section><section class="category"><h2>Seasonal Or Special Events</h2><div class="items"><article class="item card">
-        <h3>Rockefeller Center Christmas Tree &amp; Ice Skating</h3>
-        <div class="meta small-muted"> </div>
-        <p></p>
-        <div class="price">Free to view; skating rental cost typical USD 20</div><div class="price-note">From TheChristmas.com listing for event</div>
-        <div class="contacts"></div>
-        <div class="foot small-muted">Confidence: 0.9 </div>
-      </article><article class="item card">
-        <h3>Radio City Christmas Spectacular starring the Rockettes</h3>
-        <div class="meta small-muted"> </div>
-        <p></p>
-        <div class="price">Tickets typically USD 50–150</div><div class="price-note">From TheChristmas.com listing general pricing</div>
-        <div class="contacts"></div>
-        <div class="foot small-muted">Confidence: 0.8 </div>
-      </article><article class="item card">
-        <h3>Bryant Park Winter Village</h3>
-        <div class="meta small-muted"> </div>
-        <p></p>
-        <div class="price">Free entry; skate rental approx. USD 20</div><div class="price-note">From event listing</div>
-        <div class="contacts"></div>
-        <div class="foot small-muted">Confidence: 0.7 </div>
-      </article><article class="item card">
-        <h3>LuminoCity Festival</h3>
-        <div class="meta small-muted"> </div>
-        <p></p>
-        <div class="price">Estimated USD 30–40</div><div class="price-note">Typical ticket price for light festivals</div>
-        <div class="contacts"></div>
-        <div class="foot small-muted">Confidence: 0.5 </div>
-      </article></div></section></div></div>"
-`;
-
-exports[`Travel Service > parseResponse (simple) > should generate a snapshot of the HTML output 1`] = `
-"<style>
-      .travel-output { font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial; color: #0f172a;
-  }
-      .travel-output .card { border-radius:6px; padding:12px; margin-bottom:10px; background:#fff; }
-      .travel-output .small-muted { color:#6b7280; font-size:0.95rem; }
-    </style><div class="travel-output"><p>Here is a curated, flexible travel program for your group of nine women (65+) visiting New York City from 2025‑12‑20 to 2025‑12‑27. The offerings span cultural highlights, markets, food, outdoor experiences, and more. Each item includes contact details, pricing, source citations, and notes on holiday-specific scheduling or potential closures.</p>
-<div class="travel-json"><section class="category"><h2>Accommodations</h2><div class="items"><article class="item card">
-        <h3>Bryant Park Winter Village area hotels</h3>
-        <div class="meta small-muted"> </div>
-        <p></p>
-        <div class="price">varies, approx. USD 300–500</div><div class="price-note">estimated from nearby hotel rates in Midtown</div>
-        <div class="contacts"><a class="tel" href="tel:+121276842422127684242">+1‑212‑768‑4242 (local: 212‑768‑4242)</a> <a class="website" href="http://www.bryantpark.org" target="_blank" rel="noopener">http://www.bryantpark.org</a></div>
-        <div class="foot small-muted">Confidence: 0.6 </div>
-      </article></div></section><section class="category"><h2>Cultural &amp; Historical Highlights</h2><div class="items"><article class="item card">
-        <h3>Radio City Christmas Spectacular (Rockettes)</h3>
-        <div class="meta small-muted"> </div>
-        <p></p>
-        <div class="price">approx. USD 80–150</div><div class="price-note">typical Broadway ticket range from official site / ticket sellers</div>
-        <div class="contacts"><a class="tel" href="tel:+121223962002122396200">+1‑212‑239‑6200 (local: 212‑239‑6200)</a> <a class="website" href="https://www.rockettes.com/christmas/" target="_blank" rel="noopener">https://www.rockettes.com/christmas/</a></div>
-        <div class="foot small-muted">Confidence: 0.7 </div>
-      </article><article class="item card">
-        <h3>The Nutcracker at Lincoln Center</h3>
-        <div class="meta small-muted"> </div>
-        <p></p>
-        <div class="price">approx. USD 70–200</div><div class="price-note">based on previous season pricing</div>
-        <div class="contacts"><a class="tel" href="tel:+121287055702128705570">+1‑212‑870‑5570 (local: 212‑870‑5570)</a> <a class="website" href="https://www.nycballet.com" target="_blank" rel="noopener">https://www.nycballet.com</a></div>
-        <div class="foot small-muted">Confidence: 0.6 </div>
-      </article></div></section></div></div>"
+        <div class="price">0 USD</div><div class="price-note">general climate knowledge</div>
+        <div class="contacts"> <a class="website" href="https://general climate data" target="_blank" rel="noopener">general climate data</a></div>
+        <div class="foot small-muted">Confidence: 0.8 (last checked: 2025‑09‑11) </div>
+      </article></div></section><section class="category"><h2>Cultural &amp; Historical Highlights</h2><div class="items"><article class="item card" id="item1">
+        <h3>Bellagio Conservatory &amp; Botanical Gardens – Winter Display</h3>
+        <p>Spectacular holiday-themed rotating display (Nov 16–Jan 4).</p>
+        <div class="address">Bellagio, Las Vegas Strip</div>
+        <div class="price">Free USD</div><div class="price-note">from visitor guides</div>
+        <div class="contacts"> <a class="website" href="https://Bellagio official site" target="_blank" rel="noopener">Bellagio official site</a></div>
+        <div class="foot small-muted">Confidence: 0.9 (last checked: 2025‑09‑11) <a href="https://turn0search0" target="_blank" rel="noopener">source</a></div>
+      </article><article class="item card" id="item2">
+        <h3>Neon Museum</h3>
+        <p>Outdoor museum of historic neon signs—great in cooler December weather.</p>
+        <div class="address">Las Vegas, NV</div>
+        <div class="price">~$25 USD</div><div class="price-note">estimated typical admission</div>
+        <div class="contacts"> <a class="website" href="https://Neon Museum official site" target="_blank" rel="noopener">Neon Museum official site</a></div>
+        <div class="foot small-muted">Confidence: 0.7 (last checked: 2025‑09‑11) <a href="https://turn0search2" target="_blank" rel="noopener">source</a></div>
+      </article><article class="item card" id="item3">
+        <h3>Bellagio Gallery of Fine Art</h3>
+        <p>Rotating art exhibitions in Bellagio.</p>
+        <div class="address">Bellagio, Las Vegas Strip</div>
+        <div class="price">~$20–$25 USD</div><div class="price-note">typical gallery admission</div>
+        <div class="contacts"> <a class="website" href="https://Bellagio Gallery official" target="_blank" rel="noopener">Bellagio Gallery official</a></div>
+        <div class="foot small-muted">Confidence: 0.6 (last checked: 2025‑09‑11) <a href="https://turn0search10" target="_blank" rel="noopener">source</a></div>
+      </article><article class="item card" id="item4">
+        <h3>The Beverly Theater</h3>
+        <p>Independent art‑house cinema and performance venue downtown.</p>
+        <div class="address">515 South Sixth Street, Las Vegas, NV 89101</div>
+        <div class="price">~$2–$10 USD</div><div class="price-note">report of $2 movies</div>
+        <div class="contacts"> <a class="website" href="https://Beverly Theater official" target="_blank" rel="noopener">Beverly Theater official</a></div>
+        <div class="foot small-muted">Confidence: 0.8 (last checked: 2025‑09‑11) <a href="https://turn0search14" target="_blank" rel="noopener">source</a></div>
+      </article></div></section><section class="category"><h2>Local Food &amp; Dining</h2><div class="items"><article class="item card" id="item5">
+        <h3>Ethel M Chocolates &amp; Holiday Cactus Garden Lights</h3>
+        <p>Chocolate factory tour, seasonal lights display, hot chocolate.</p>
+        <div class="address">Henderson, near Las Vegas</div>
+        <div class="price">$2 (garden), plus purchases USD</div><div class="price-note">from guide noting $2 entry fee</div>
+        <div class="contacts"> <a class="website" href="https://Ethel M Chocolates official" target="_blank" rel="noopener">Ethel M Chocolates official</a></div>
+        <div class="foot small-muted">Confidence: 0.9 (last checked: 2025‑09‑11) <a href="https://turn0search0" target="_blank" rel="noopener">source</a></div>
+      </article></div></section><section class="category"><h2>Markets &amp; Shopping</h2><div class="items"><article class="item card" id="item6">
+        <h3>Market in the Alley</h3>
+        <p>Curated market with local makers, artists, food.</p>
+        <div class="address">Downtown Summerlin</div>
+        <div class="price">Free entry, purchases vary USD</div><div class="price-note">market event info</div>
+        <div class="contacts"> <a class="website" href="https://Market in the Alley info" target="_blank" rel="noopener">Market in the Alley info</a></div>
+        <div class="foot small-muted">Confidence: 0.8 (last checked: 2025‑09‑11) <a href="https://turn0search1" target="_blank" rel="noopener">source</a></div>
+      </article><article class="item card" id="item7">
+        <h3>Henderson Farmers Market</h3>
+        <p>Local produce and artisan vendors every Thursday (not Dec 25).</p>
+        <div class="address">Cornerstone Park</div>
+        <div class="price">Free entry, purchases vary USD</div><div class="price-note">market event info</div>
+        <div class="contacts"> <a class="website" href="https://Henderson Farmers Market info" target="_blank" rel="noopener">Henderson Farmers Market info</a></div>
+        <div class="foot small-muted">Confidence: 0.8 (last checked: 2025‑09‑11) <a href="https://turn0search1" target="_blank" rel="noopener">source</a></div>
+      </article><article class="item card" id="item8">
+        <h3>Town Square Santa Selfie</h3>
+        <p>Photo with Santa (Wednesdays), $20 credited toward photos.</p>
+        <div class="address">6605 S Las Vegas Blvd</div>
+        <div class="price">$20 USD</div><div class="price-note">from Secret Las Vegas guide</div>
+        <div class="contacts"> <a class="website" href="https://Town Square Las Vegas info" target="_blank" rel="noopener">Town Square Las Vegas info</a></div>
+        <div class="foot small-muted">Confidence: 0.8 (last checked: 2025‑09‑11) <a href="https://turn0search11" target="_blank" rel="noopener">source</a></div>
+      </article></div></section><section class="category"><h2>Outdoor Adventures &amp; Nature</h2><div class="items"><article class="item card" id="item9">
+        <h3>Red Rock Canyon hiking</h3>
+        <p>Day hikes like Calico Tanks, Ice Box Canyon in mild December weather.</p>
+        <div class="address">Red Rock Canyon NCA</div>
+        <div class="price">~$15 vehicle fee USD</div><div class="price-note">typical park fee</div>
+        <div class="contacts"> <a class="website" href="https://Red Rock Canyon official" target="_blank" rel="noopener">Red Rock Canyon official</a></div>
+        <div class="foot small-muted">Confidence: 0.7 (last checked: 2025‑09‑11) <a href="https://turn0search0" target="_blank" rel="noopener">source</a></div>
+      </article><article class="item card" id="item10">
+        <h3>Valley of Fire State Park</h3>
+        <p>Hiking and petroglyphs in glowing red rock, cooler and less crowded.</p>
+        <div class="address">Valley of Fire State Park</div>
+        <div class="price">~$10 vehicle fee USD</div><div class="price-note">typical park fee</div>
+        <div class="contacts"> <a class="website" href="https://Valley of Fire official" target="_blank" rel="noopener">Valley of Fire official</a></div>
+        <div class="foot small-muted">Confidence: 0.7 (last checked: 2025‑09‑11) <a href="https://turn0search3" target="_blank" rel="noopener">source</a></div>
+      </article><article class="item card" id="item11">
+        <h3>Mt. Charleston snow play</h3>
+        <p>Snow tubing or snowman-building near Lee Canyon (~1 h drive).</p>
+        <div class="address">Mt. Charleston</div>
+        <div class="price">~$20–$30 (activity rental) USD</div><div class="price-note">estimated from similar venues</div>
+        <div class="contacts"> <a class="website" href="https://Mt. Charleston info" target="_blank" rel="noopener">Mt. Charleston info</a></div>
+        <div class="foot small-muted">Confidence: 0.6 (last checked: 2025‑09‑11) <a href="https://turn0search4" target="_blank" rel="noopener">source</a></div>
+      </article><article class="item card" id="item12">
+        <h3>Hoover Dam &amp; Boulder City</h3>
+        <p>Tour dam and stroll holiday‑lit Boulder City (~45 min drive).</p>
+        <div class="address">Hoover Dam area</div>
+        <div class="price">~$30–$50 for guided tour USD</div><div class="price-note">typical tour pricing</div>
+        <div class="contacts"> <a class="website" href="https://Hoover Dam tours" target="_blank" rel="noopener">Hoover Dam tours</a></div>
+        <div class="foot small-muted">Confidence: 0.6 (last checked: 2025‑09‑11) <a href="https://turn0search6" target="_blank" rel="noopener">source</a></div>
+      </article></div></section><section class="category"><h2>Day Trips / Excursions</h2><div class="items"><article class="item card" id="item13">
+        <h3>Grand Canyon / Hoover Dam Tour</h3>
+        <p>Full‑day West Rim Grand Canyon and Hoover Dam tour.</p>
+        <div class="address">Pickup from Las Vegas</div>
+        <div class="price">~$150–$200 USD</div><div class="price-note">estimated OTA average</div>
+        <div class="contacts"> <a class="website" href="https://Tour operator sites" target="_blank" rel="noopener">Tour operator sites</a></div>
+        <div class="foot small-muted">Confidence: 0.6 (last checked: 2025‑09‑11) <a href="https://turn0search2" target="_blank" rel="noopener">source</a></div>
+      </article></div></section><section class="category"><h2>Evening &amp; Nightlife Experiences</h2><div class="items"><article class="item card" id="item14">
+        <h3>Leona Lewis “A Starry Night” residency</h3>
+        <p>Holiday‑themed show at Voltaire, Venetian (Nov 1–Jan 1), tickets from $75.</p>
+        <div class="address">The Venetian Resort</div>
+        <div class="price">from $75 USD</div><div class="price-note">from People article</div>
+        <div class="contacts"> <a class="website" href="https://Venetian show info" target="_blank" rel="noopener">Venetian show info</a></div>
+        <div class="foot small-muted">Confidence: 0.9 (last checked: 2025‑09‑11) <a href="https://turn0news15" target="_blank" rel="noopener">source</a></div>
+      </article><article class="item card" id="item15">
+        <h3>Zac Brown Band residency at Sphere</h3>
+        <p>Four shows Dec 5,6,12,13 at Sphere.</p>
+        <div class="address">Sphere, Las Vegas</div>
+        <div class="price">TBD (resale platforms) USD</div><div class="price-note">announced, tickets via resale</div>
+        <div class="contacts"> <a class="website" href="https://Sphere event info" target="_blank" rel="noopener">Sphere event info</a></div>
+        <div class="foot small-muted">Confidence: 0.8 (last checked: 2025‑09‑11) <a href="https://turn0news16" target="_blank" rel="noopener">source</a></div>
+      </article><article class="item card" id="item16">
+        <h3>Mavericks variety show (burlesque/comedy/magic)</h3>
+        <p>Vintage‑style variety show at Plaza with burlesque, comedy, magic.</p>
+        <div class="address">Plaza Hotel &amp; Casino, 1 Main Street</div>
+        <div class="price">~$50–$70 USD</div><div class="price-note">estimated show pricing</div>
+        <div class="contacts"> <a class="website" href="https://Plaza Showroom info" target="_blank" rel="noopener">Plaza Showroom info</a></div>
+        <div class="foot small-muted">Confidence: 0.6 (last checked: 2025‑09‑11) <a href="https://turn0search11" target="_blank" rel="noopener">source</a></div>
+      </article></div></section><section class="category"><h2>Seasonal Or Special Events</h2><div class="items"><article class="item card" id="item17">
+        <h3>Magical Forest at Opportunity Village</h3>
+        <p>Holiday lights, rides, Santa, mini‑golf. Open Dec 19–31 (closed Dec 25).</p>
+        <div class="address">Opportunity Village</div>
+        <div class="price">~$15–$25 USD</div><div class="price-note">visitor guide pricing</div>
+        <div class="contacts"> <a class="website" href="https://Opportunity Village Magical Forest" target="_blank" rel="noopener">Opportunity Village Magical Forest</a></div>
+        <div class="foot small-muted">Confidence: 0.8 (last checked: 2025‑09‑11) <a href="https://turn0search0" target="_blank" rel="noopener">source</a></div>
+      </article><article class="item card" id="item18">
+        <h3>Glittering Lights at Las Vegas Motor Speedway</h3>
+        <p>Drive‑through holiday lights display, millions of lights, per car pricing.</p>
+        <div class="address">Las Vegas Motor Speedway</div>
+        <div class="price">~$30 per car USD</div><div class="price-note">typical per‑car rate</div>
+        <div class="contacts"> <a class="website" href="https://Speedway holiday lights info" target="_blank" rel="noopener">Speedway holiday lights info</a></div>
+        <div class="foot small-muted">Confidence: 0.7 (last checked: 2025‑09‑11) <a href="https://turn0search0" target="_blank" rel="noopener">source</a></div>
+      </article><article class="item card" id="item19">
+        <h3>NBA Cup Final at T‑Mobile Arena</h3>
+        <p>Championship game in Las Vegas on Dec 17.</p>
+        <div class="address">T‑Mobile Arena</div>
+        <div class="price">TBD (ticket resale) USD</div><div class="price-note">announced event, tickets via resale</div>
+        <div class="contacts"> <a class="website" href="https://NBA Cup info" target="_blank" rel="noopener">NBA Cup info</a></div>
+        <div class="foot small-muted">Confidence: 0.8 (last checked: 2025‑09‑11) <a href="https://turn0news19" target="_blank" rel="noopener">source</a></div>
+      </article><article class="item card" id="item20">
+        <h3>UFC 323</h3>
+        <p>MMA event on Dec 6 in Las Vegas.</p>
+        <div class="address">TBD venue</div>
+        <div class="price">TBD USD</div><div class="price-note">event announced</div>
+        <div class="contacts"> <a class="website" href="https://UFC official" target="_blank" rel="noopener">UFC official</a></div>
+        <div class="foot small-muted">Confidence: 0.8 (last checked: 2025‑09‑11) <a href="https://turn0search20" target="_blank" rel="noopener">source</a></div>
+      </article></div></section><section class="top-contacts"><h2>Top contacts</h2><div class="contact-card">
+        <div class="name">The Venetian Resort Box Office</div>
+        <div class="tel"><a href="tel:+17024141000">+1-702-414-1000</a></div>
+        <div class="email">—</div>
+        <div class="website"><a href="https://www.venetianlasvegas.com" target="_blank" rel="noopener">https://www.venetianlasvegas.com</a></div>
+        <div class="note">For Leona Lewis residency tickets</div>
+        <div class="vc-download"><a href="/vcf/the-venetian-resort-box-office" target="_blank">Download vCard</a></div>
+      </div><div class="contact-card">
+        <div class="name">Sphere Venue Box Office</div>
+        <div class="tel"><a href="tel:+17026987000">+1-702-698-7000</a></div>
+        <div class="email">—</div>
+        <div class="website"><a href="https://www.spherevegas.com" target="_blank" rel="noopener">https://www.spherevegas.com</a></div>
+        <div class="note">For Zac Brown Band and immersive shows</div>
+        <div class="vc-download"><a href="/vcf/sphere-venue-box-office" target="_blank">Download vCard</a></div>
+      </div><div class="contact-card">
+        <div class="name">Bellagio Conservatory Info Desk</div>
+        <div class="tel"><a href="tel:+17026937111">+1-702-693-7111</a></div>
+        <div class="email">—</div>
+        <div class="website"><a href="https://www.bellagio.com" target="_blank" rel="noopener">https://www.bellagio.com</a></div>
+        <div class="note">Holiday display info</div>
+        <div class="vc-download"><a href="/vcf/bellagio-conservatory-info-desk" target="_blank">Download vCard</a></div>
+      </div><div class="contact-card">
+        <div class="name">Opportunity Village Magical Forest</div>
+        <div class="tel"><a href="tel:+17022295200">+1-702-229-5200</a></div>
+        <div class="email">—</div>
+        <div class="website"><a href="https://www.opportunityvillage.org" target="_blank" rel="noopener">https://www.opportunityvillage.org</a></div>
+        <div class="note">Magical Forest holiday event</div>
+        <div class="vc-download"><a href="/vcf/opportunity-village-magical-forest" target="_blank">Download vCard</a></div>
+      </div></section></div></div>"
 `;

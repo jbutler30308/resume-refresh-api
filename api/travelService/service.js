@@ -1,93 +1,43 @@
 import { marked } from 'marked';
 import sanitizeHtml from 'sanitize-html';
 import slugify from 'slugify';
+import logger from '../lib/logger.js'
 
+// --- RENDER FUNCTIONS ---
 
-// --- helper: extract fenced JSON (```json ... ```)
-export function extractFencedJson(raw) {
-  const regex = /```json\s*([\s\S]*?)\s*```/i;
-  const m = raw.match(regex);
-  if (!m) return { jsonText: null, md: raw };
-  const jsonText = m[1].trim();
-  const md = raw.replace(regex, '').trim();
-  console.log({ jsonText, md }, null, 2)
-  return { jsonText, md };
-}
-
-export function safeJsonParse(jsonText) {
-  if (!jsonText) return { data: null, error: null };
-  try {
-    return { data: JSON.parse(jsonText), error: null };
-  } catch (e) {
-    // gentle cleanup: remove trailing commas then retry
-    try {
-      const cleaned = jsonText.replace(/,\s*(}|])/g, '$1');
-      return { data: JSON.parse(cleaned), error: null };
-    } catch (e2) {
-      return { data: null, error: e2.message || e.message };
-    }
-  }
+function renderMetaSection(meta) {
+  if (!meta) return '';
+  return `<section class="meta-info">
+      <h2>Trip Details</h2>
+      <p><strong>Destination:</strong> ${escapeHtml(meta.destination)}</p>
+      <p><strong>Dates:</strong> ${escapeHtml(meta.dates)}</p>
+      <p><strong>Group:</strong> ${escapeHtml(String(meta.groupSize))} people (${escapeHtml(meta.groupDetails)})</p>
+      <p class="small-muted">Report generated on ${escapeHtml(meta.generated_at)}</p>
+    </section>`;
 }
 
 export function renderPrice(item) {
   if (!item) return '';
-  let { price_type, price_value, currency, price_extraction_note } = item;
+  const { price_value, currency, price_extraction_note } = item;
 
-  let priceHtml = ''; // To hold the main price string
-
-  // Fallback assignment for price_type (still useful)
-  if (!price_type) {
-    if (Array.isArray(price_value) && price_value.length === 2) {
-      price_type = 'price_range_per_person';
-    } else if (typeof price_value === 'number') {
-      price_type = 'exact_price_per_person';
-    }
-  }
-
+  let priceHtml = '';
   const currencySymbol = currency === 'USD' ? '$' : '';
   const formattedCurrency = currency || '';
 
-  // First, try to render the structured price data
-  switch (price_type) {
-    case 'exact_price_per_person':
-      if (typeof price_value === 'number') {
-        priceHtml = `<div class=\"price\">${currencySymbol}${price_value.toFixed(2)} ${formattedCurrency} per person</div>`;
-      }
-      break;
-    case 'price_range_per_person':
-      if (Array.isArray(price_value) && price_value.length === 2) {
-        priceHtml = `<div class=\"price\">${currencySymbol}${price_value[0].toFixed(2)} - ${currencySymbol}${price_value[1].toFixed(2)} ${formattedCurrency} per person</div>`;
-      }
-      break;
+  if (typeof price_value === 'string' && price_value.trim()) {
+    priceHtml = `<div class="price">${escapeHtml(price_value)} ${formattedCurrency}</div>`;
   }
 
-  // If structured rendering failed, try the new fallback
-  if (!priceHtml) {
-    const knownPriceFields = ['price_type', 'price_value', 'price_extraction_note'];
-    const unknownPriceKey = Object.keys(item).find(key => key.startsWith('price_') && !knownPriceFields.includes(key));
-
-    if (unknownPriceKey && item[unknownPriceKey]) {
-      priceHtml = `<div class=\"price\">${escapeHtml(item[unknownPriceKey])}</div>`;
-    }
-  }
-  
-  // If still no price, and price_value is a string, use it.
-  if (!priceHtml && typeof price_value === 'string') {
-      priceHtml = `<div class=\"price\">${escapeHtml(price_value)}</div>`;
-  }
-
-
-  // Always render the note if it exists
-  const noteHtml = price_extraction_note ? `<div class=\"price-note\">${escapeHtml(price_extraction_note)}</div>` : '';
+  const noteHtml = price_extraction_note ? `<div class="price-note">${escapeHtml(price_extraction_note)}</div>` : '';
 
   return priceHtml + noteHtml;
 }
 
 export function renderContactInfo(item) {
   let out = '<div class="contacts">';
-  if (item.phone_e164 || item.contact_phone) {
-    const phone = item.phone_e164 || item.contact_phone;
-    out += `<a class="tel" href="tel:${escapeHtml(phone.replace(/[^+0-9]/g, ''))}">${escapeHtml(phone)}</a>`;
+  if (item.phone_local) {
+    const telLink = item.phone_e164 || item.phone_local.replace(/[^+\d]/g, '');
+    out += `<a class="tel" href="tel:${escapeHtml(telLink)}">${escapeHtml(item.phone_local)}</a>`;
   }
   if (item.email) {
     out += ` <a class="email" href="mailto:${escapeHtml(item.email)}">${escapeHtml(item.email)}</a>`;
@@ -96,19 +46,21 @@ export function renderContactInfo(item) {
     const href = item.website.startsWith('http') ? item.website : 'https://' + item.website;
     out += ` <a class="website" href="${escapeHtml(href)}" target="_blank" rel="noopener">${escapeHtml(item.website)}</a>`;
   }
-  out += '</div>'; // contacts
+  out += '</div>';
   return out;
 }
 
 export function renderItemFooter(item) {
-  return `<div class="foot small-muted">Confidence: ${escapeHtml(String(item.confidence || 'n/a'))} ${item.source_urls ? renderSourceLinks(item.source_urls) : ''}</div>`;
+  const lastCheckedHtml = item.last_checked ? ` (last checked: ${escapeHtml(item.last_checked)})` : '';
+  return `<div class="foot small-muted">Confidence: ${escapeHtml(String(item.confidence || 'n/a'))}${lastCheckedHtml} ${item.source_urls ? renderSourceLinks(item.source_urls) : ''}</div>`;
 }
 
 export function renderItem(it) {
-  return `<article class="item card">
+  const addressHtml = it.address ? `<div class="address">${escapeHtml(it.address)}</div>` : '';
+  return `<article class="item card" id="${slugify(it.id || it.name || 'item', { lower: true, strict: true })}">
         <h3>${escapeHtml(it.name || 'Untitled')}</h3>
-        <div class="meta small-muted">${escapeHtml(it.type || '')} ${it.availability ? ' • ' + escapeHtml(it.availability) : ''}</div>
         <p>${escapeHtml(it.short_description || '')}</p>
+        ${addressHtml}
         ${renderPrice(it)}
         ${renderContactInfo(it)}
         ${renderItemFooter(it)}
@@ -116,6 +68,8 @@ export function renderItem(it) {
 }
 
 function renderCategorySection(categoryName, items) {
+  logger.info('category: %j', categoryName);
+  logger.info('items: %j', items)
   if (!Array.isArray(items) || items.length === 0) return '';
   let out = `<section class="category"><h2>${escapeHtml(pretty(categoryName))}</h2><div class="items">`;
   for (const it of items) {
@@ -130,11 +84,15 @@ function renderTopContactsSection(vcards) {
   let out = `<section class="top-contacts"><h2>Top contacts</h2>`;
   vcards.forEach(c => {
     const slug = slugify(c.name || 'contact', { lower: true, strict: true });
-    const tel = c.tel ? c.tel.replace(/[^+0-9]/g, '') : '';
+    const tel = c.tel ? c.tel.replace(/[^+\d]/g, '') : '';
+    const websiteHtml = c.website ? `<div class="website"><a href="${escapeHtml(c.website)}" target="_blank" rel="noopener">${escapeHtml(c.website)}</a></div>` : '';
+    const noteHtml = c.note ? `<div class="note">${escapeHtml(c.note)}</div>` : '';
     out += `<div class="contact-card">
         <div class="name">${escapeHtml(c.name)}</div>
-        <div class="tel">${c.tel ? `<a href="tel:${escapeHtml(tel)}">${escapeHtml(tel)}</a>` : '—'}</div>
+        <div class="tel">${c.tel ? `<a href="tel:${escapeHtml(tel)}">${escapeHtml(c.tel)}</a>` : '—'}</div>
         <div class="email">${c.email ? `<a href="mailto:${escapeHtml(c.email)}">${escapeHtml(c.email)}</a>` : '—'}</div>
+        ${websiteHtml}
+        ${noteHtml}
         <div class="vc-download"><a href="/vcf/${encodeURIComponent(slug)}" target="_blank">Download vCard</a></div>
       </div>`;
   });
@@ -142,10 +100,9 @@ function renderTopContactsSection(vcards) {
   return out;
 }
 
-// Very small renderer for JSON -> HTML string (server-side)
 function renderParsedJsonAsHtml(parsed) {
   if (!parsed) return '';
-  const categories = parsed.categories || parsed;
+  const categories = parsed.categories || {};
   let out = '<div class="travel-json">';
 
   for (const key of Object.keys(categories)) {
@@ -157,6 +114,8 @@ function renderParsedJsonAsHtml(parsed) {
   out += '</div>';
   return out;
 }
+
+// --- HELPERS ---
 
 function renderSourceLinks(urls) {
   if (!urls) return '';
@@ -175,78 +134,45 @@ function escapeHtml(s) {
     '"': '&quot;',
     "'": '&#39;'
   };
-  return String(s).replace(/[&<>"]|\/(?![\w\s]*>)/g, c => map[c] || c);
+  return String(s).replace(/[&<>"'\/]/g, c => map[c] || c);
 }
 
 function pretty(s) {
-    return s.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
-  }
+  return s.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+}
 
-  // Simple vCard generation store (in-memory) - in production store persistently
-  const vcardStore = {};
-  function makeVCard(contact) {
-    const lines = ['BEGIN:VCARD', 'VERSION:3.0'];
-    if (contact.name) lines.push('FN:' + contact.name);
-    if (contact.tel) lines.push('TEL;TYPE=WORK,VOICE:' + contact.tel);
-    if (contact.email) lines.push('EMAIL;TYPE=INTERNET:' + contact.email);
-    if (contact.website) lines.push('URL:' + contact.website);
-    if (contact.note) lines.push('NOTE:' + contact.note.replace(/\r?\n/g, ' '));
-    lines.push('END:VCARD');
-    return lines.join('\r\n');
-  }
+// --- MAIN EXPORT ---
 
-  export const parseResponse = (rawText) => {
+export const parseResponse = (travelPlan) => {
+  // The travelPlan is now a direct JSON object.
+  const metaHtml = renderMetaSection(travelPlan.meta);
+  const reportHtml = travelPlan.report ? marked(travelPlan.report) : '';
 
-    const { jsonText, md } = extractFencedJson(rawText);
-    const parsedRes = safeJsonParse(jsonText);
-    const parsed = parsedRes.data;
-    // If parse error, we still render markdown but include a warning
-    let htmlParts = '';
-    if (parsedRes.error) {
-      htmlParts += `<div class="warning">JSON parse error: ${escapeHtml(parsedRes.error)}</div>`;
+  // Render the structured categories and contacts from the JSON object
+  const jsonHtml = renderParsedJsonAsHtml(travelPlan);
+
+  // Combine and sanitize
+  const combined = `<div class="travel-output">${metaHtml}${reportHtml}${jsonHtml}</div>`;
+  logger.info('combined: %j', combined);
+
+  const safe = sanitizeHtml(combined, {
+    allowedTags: sanitizeHtml.defaults.allowedTags.concat(['section', 'article', 'h2', 'h3', 'div']),
+    allowedAttributes: {
+      a: ['class', 'href', 'target', 'rel'],
+      article: ['class', 'id'],
+      div: ['class'],
+      section: ['class']
+    },
+    allowedSchemesByTag: {
+      a: ['http', 'https', 'mailto', 'tel']
     }
+  });
 
-    // Render JSON -> HTML server-side
-    const jsonHtml = renderParsedJsonAsHtml(parsed);
-    // Render markdown -> HTML via marked
-    const markdownHtml = md ? marked(md) : '';
+  const css = `<style>
+    .travel-output { font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial; color: #0f172a; }
+    .travel-output .card { border-radius:6px; padding:12px; margin-bottom:10px; background:#fff; }
+    .travel-output .small-muted { color:#6b7280; font-size:0.95rem; }
+  </style>`;
 
-    // Combine and sanitize
-    const combined = `<div class="travel-output">${markdownHtml}${htmlParts}${jsonHtml}</div>`;
-    // Use sanitize-html to strip unsafe tags/attributes before sending to client
-    const safe = sanitizeHtml(combined, {
-      allowedTags: sanitizeHtml.defaults.allowedTags.concat(['section', 'article', 'h2', 'h3', 'div']),
-      allowedAttributes: {
-        a: ['class', 'href', 'target', 'rel'],
-        article: ['class'],
-        div: ['class'],
-        section: ['class']
-      },
-      allowedSchemesByTag: {
-        a: ['http', 'https', 'mailto', 'tel']
-      }
-    });
-
-    // Optionally add small CSS so it looks fine in Squarespace. Keep minimal to avoid conflicts.
-    const css = `<style>
-      .travel-output { font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial; color: #0f172a;
-  }
-      .travel-output .card { border-radius:6px; padding:12px; margin-bottom:10px; background:#fff; }
-      .travel-output .small-muted { color:#6b7280; font-size:0.95rem; }
-    </style>`;
-
-    return (css + safe);
-  };
-
-  // vCard endpoint: returns a .vcf for a contact slug (in production, map slug -> contact details)
-  // app.get('/vcf/:slug', (req, res) => {
-  //   const slug = req.params.slug;
-  //   // In a real app, look up the contact details by slug from your DB/store created during render
-  //   // For demo, we check the vcardStore
-  //   const contact = vcardStore[slug];
-  //   if (!contact) return res.status(404).send('Not found');
-  //   const v = makeVCard(contact);
-  //   res.setHeader('Content-Type', 'text/vcard; charset=utf-8');
-  //   res.setHeader('Content-Disposition', attachment; filename="${slug}.vcf");
-  //   res.send(v);
-  // });
+  return (css + safe);
+};
