@@ -16,7 +16,8 @@
     "marked": "^16.2.1",
     "openai": "^4.97.0",
     "sanitize-html": "^2.17.0",
-    "slugify": "^1.6.6"
+    "slugify": "^1.6.6",
+    "zod": "^4.1.5"
   },
   "devDependencies": {
     "newman": "^6.2.1",

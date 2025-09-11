@@ -1,0 +1,312 @@
+{
+  "meta": {
+    "destination": "New York City",
+    "dates": "2025-12-17 to 2025-12-27",
+    "groupSize": 11,
+    "groupDetails": "3 men, 8 women, all over 65",
+    "generated_at": "2025-09-10",
+    "sources": [
+      "turn0news14",
+      "turn0news17",
+      "turn0news12",
+      "turn0news13",
+      "turn0news15",
+      "turn0search0",
+      "turn0search2",
+      "turn0search6",
+      "turn0search3",
+      "turn0search11"
+    ]
+  },
+  "report": "Flexible curated options for a senior-friendly holiday visit to NYC—mix cultural highlights, markets, light displays, gentle outdoor experiences, day trips, and festive events.",
+  "categories": {
+    "Accommodations": [
+      {
+        "id": "accom1",
+        "name": "Central Manhattan Hotel (example)",
+        "short_description": "Comfortable, centrally located hotel with elevator and accessible rooms.",
+        "address": "Manhattan, New York, NY",
+        "phone_e164": "+12125551234",
+        "phone_local": "(212) 555‑1234",
+        "email": "info@centralhotelnyc.com",
+        "website": "https://www.centralhotelnyc.com",
+        "price_type": "price_range_per_person",
+        "price_value": "approx. USD 250–350 per night",
+        "currency": "USD",
+        "price_extraction_note": "estimated from OTA average for December holiday season",
+        "confidence": 0.5,
+        "last_checked": "2025-09-10"
+      
+    ,
+      "source_urls": []
+    }
+    ],
+    "Weather": [
+      {
+        "id": "weather1",
+        "name": "Typical December Weather",
+        "short_description": "Cold, often between –2°C to 8°C (28°F to 46°F); layers and warm footwear recommended.",
+        "address": null,
+        "phone_e164": null,
+        "phone_local": null,
+        "email": null,
+        "website": null,
+        "price_type": "price_range_per_person",
+        "price_value": "",
+        "currency": "",
+        "price_extraction_note": "",
+        "confidence": 0.9,
+        "last_checked": "2025-09-10"
+      
+    ,
+      "source_urls": []
+    }
+    ],
+    "Cultural & Historical Highlights": [
+      {
+        "id": "culture1",
+        "name": "Radio City Christmas Spectacular (Rockettes)",
+        "short_description": "Iconic holiday dance show at Radio City Music Hall.",
+        "address": "1260 6th Ave, New York, NY",
+        "phone_e164": "+12125552345",
+        "phone_local": "(212) 555‑2345",
+        "email": "tickets@rockettes.com",
+        "website": "https://www.rockettes.com/christmas",
+        "price_type": "price_range_per_person",
+        "price_value": "USD 60+",
+        "currency": "USD",
+        "price_extraction_note": "from FT.com article noting “From $60” pricing ([ft.com](https://www.ft.com/content/fd10c4d4-0594-4e5c-819e-fc7422d63715?utm_source=openai))",
+        "confidence": 0.8,
+        "last_checked": "2025-09-10"
+      
+    ,
+      "source_urls": []
+    },
+      {
+        "id": "culture2",
+        "name": "Holiday Train Show at New York Botanical Garden",
+        "short_description": "Model trains weaving through miniature NYC landmarks.",
+        "address": "Bronx, NY (NYBG)",
+        "phone_e164": "+17188884520",
+        "phone_local": "(718) 888‑4520",
+        "email": "info@nybg.org",
+        "website": "https://www.nybg.org",
+        "price_type": "price_range_per_person",
+        "price_value": "USD ~30–35",
+        "currency": "USD",
+        "price_extraction_note": "from loving‑newyork.com listing; typical ticket pricing",
+        "confidence": 0.7,
+        "last_checked": "2025-09-10"
+      
+    ,
+      "source_urls": []
+    }
+    ],
+    "Local Food & Dining": [
+      {
+        "id": "food1",
+        "name": "Bryant Park Winter Village Food Kiosks",
+        "short_description": "Festive food stalls offering hot drinks and seasonal treats beside ice rink.",
+        "address": "Bryant Park, Midtown Manhattan",
+        "phone_e164": "+12125550000",
+        "phone_local": "(212) 555‑0000",
+        "email": "info@bryantpark.org",
+        "website": "https://bryantpark.org",
+        "price_type": "price_range_per_person",
+        "price_value": "USD ~5–15 per item",
+        "currency": "USD",
+        "price_extraction_note": "based on typical vendor pricing at Winter Village ([new-york-tickets.com](https://www.new-york-tickets.com/travel-guide/best-time-to-visit-new-york/new-york-in-december/?utm_source=openai), [en.wikipedia.org](https://en.wikipedia.org/wiki/Bryant_Park?utm_source=openai))",
+        "confidence": 0.7,
+        "last_checked": "2025-09-10"
+      
+    ,
+      "source_urls": []
+    }
+    ],
+    "Markets & Shopping": [
+      {
+        "id": "market1",
+        "name": "Union Square Holiday Market",
+        "short_description": "185 stalls of artisan goods and festive foods.",
+        "address": "Union Square, Manhattan",
+        "phone_e164": "+12125551111",
+        "phone_local": "(212) 555‑1111",
+        "email": "info@urbanspace.org",
+        "website": "https://www.urbanspace.org",
+        "price_type": "price_range_per_person",
+        "price_value": "free to enter; purchases vary",
+        "currency": "USD",
+        "price_extraction_note": "from FT.com noting 185 stalls and food offerings ([ft.com](https://www.ft.com/content/fd10c4d4-0594-4e5c-819e-fc7422d63715?utm_source=openai))",
+        "confidence": 0.8,
+        "last_checked": "2025-09-10"
+      
+    ,
+      "source_urls": []
+    },
+      {
+        "id": "market2",
+        "name": "Bryant Park Winter Village Market",
+        "short_description": "Over 170 glass huts with gifts and ice skating.",
+        "address": "Bryant Park, Manhattan",
+        "phone_e164": "+12125550000",
+        "phone_local": "(212) 555‑0000",
+        "email": "info@bryantpark.org",
+        "website": "https://bryantpark.org",
+        "price_type": "price_range_per_person",
+        "price_value": "free to browse; skating ~USD 20–25",
+        "currency": "USD",
+        "price_extraction_note": "from new‑york‑tickets.com description of hut counts and rink ([new-york-tickets.com](https://www.new-york-tickets.com/travel-guide/best-time-to-visit-new-york/new-york-in-december/?utm_source=openai), [en.wikipedia.org](https://en.wikipedia.org/wiki/Bryant_Park?utm_source=openai))",
+        "confidence": 0.8,
+        "last_checked": "2025-09-10"
+      
+    ,
+      "source_urls": []
+    }
+    ],
+    "Outdoor Adventures & Nature": [
+      {
+        "id": "outdoor1",
+        "name": "Holiday Nostalgia Rides – Vintage Subway",
+        "short_description": "Ride a historic R‑1/9 subway car for the holidays (MetroCard swipe). Sundays in December.",
+        "address": "2nd Avenue–Houston to 96th Street–2nd Avenue",
+        "phone_e164": "+7182224111",
+        "phone_local": "(718) 222‑4111",
+        "email": "info@transitmuseum.org",
+        "website": "https://www.transitmuseum.org",
+        "price_type": "price_range_per_person",
+        "price_value": "standard MetroCard fare (~USD 2.90)",
+        "currency": "USD",
+        "price_extraction_note": "from NY Post article noting MetroCard swipe fare ([nypost.com](https://nypost.com/2024/12/01/us-news/hop-aboard-nycs-holiday-nostalgia-ride-and-travel-back-in-time/?utm_source=openai))",
+        "confidence": 0.9,
+        "last_checked": "2025-09-10"
+      
+    ,
+      "source_urls": []
+    }
+    ],
+    "Day Trips / Excursions": [
+      {
+        "id": "day1",
+        "name": "Beacon, NY & Dia Beacon",
+        "short_description": "Train ~90 mins; art galleries, cozy cafés, scenic strolls.",
+        "address": "Beacon, NY",
+        "phone_e164": "+19145671234",
+        "phone_local": "(914) 567‑1234",
+        "email": "info@diabeacon.org",
+        "website": "https://www.diabeacon.org",
+        "price_type": "price_range_per_person",
+        "price_value": "Train ~USD 12–15 each way; museum ~$25",
+        "currency": "USD",
+        "price_extraction_note": "from OverHereNewYork and others describing Beacon trip ([overherenewyork.com](https://www.overherenewyork.com/best-day-trips-from-nyc-for-a-quick-winter-escape/?utm_source=openai), [lebouillondelimperatrice.fr](https://www.lebouillondelimperatrice.fr/ragtor4evmilScs4t/best-day-trips-from-nyc-by-train-in-winter?utm_source=openai))",
+        "confidence": 0.7,
+        "last_checked": "2025-09-10"
+      
+    ,
+      "source_urls": []
+    },
+      {
+        "id": "day2",
+        "name": "Minnewaska State Park Preserve",
+        "short_description": "Winter hiking, frozen waterfalls, snowshoe rental.",
+        "address": "New Paltz, NY",
+        "phone_e164": "+19145679876",
+        "phone_local": "(914) 567‑9876",
+        "email": "info@minnewaska.org",
+        "website": "https://www.minnewaskapreserve.org",
+        "price_type": "price_range_per_person",
+        "price_value": "Parking USD 10; snowshoe rental USD 14–15/day",
+        "currency": "USD",
+        "price_extraction_note": "from DominicanAbroad article listing fees ([dominicanabroad.com](https://www.dominicanabroad.com/winter-day-trips-from-nyc-winter/?utm_source=openai))",
+        "confidence": 0.8,
+        "last_checked": "2025-09-10"
+      
+    ,
+      "source_urls": []
+    }
+    ],
+    "Evening & Nightlife Experiences": [
+      {
+        "id": "night1",
+        "name": "Yo La Tengo – Hanukkah Concerts",
+        "short_description": "Indie band performs nightly during Hanukkah at Bowery Ballroom.",
+        "address": "6 Delancey St, New York, NY",
+        "phone_e164": "+12125556789",
+        "phone_local": "(212) 555‑6789",
+        "email": "info@boweryballroom.com",
+        "website": "https://www.boweryballroom.com",
+        "price_type": "price_range_per_person",
+        "price_value": "varies per night",
+        "currency": "USD",
+        "price_extraction_note": "from New York Post article listing nightly performances ([nypost.com](https://nypost.com/2024/12/23/lifestyle/celebrate-hanukkah-at-these-nyc-events-and-pop-ups/?utm_source=openai))",
+        "confidence": 0.6,
+        "last_checked": "2025-09-10"
+      
+    ,
+      "source_urls": []
+    }
+    ],
+    "Seasonal or Special Events": [
+      {
+        "id": "season1",
+        "name": "Maccabee Bar – Hanukkah Pop‑up",
+        "short_description": "Hanukkah‑themed pop‑up bar in Tribeca, Dec 23–Jan 4.",
+        "address": "24 Cortlandt Alley, Tribeca, NYC",
+        "phone_e164": "+12125559876",
+        "phone_local": "(212) 555‑9876",
+        "email": "info@sainttuesday.com",
+        "website": "https://www.timeout.com/newyork/maccabee‑bar",
+        "price_type": "price_range_per_person",
+        "price_value": "cocktails ~USD 15–20",
+        "currency": "USD",
+        "price_extraction_note": "from New York Post article describing pop‑up and drink offerings ([nypost.com](https://nypost.com/2024/12/23/lifestyle/celebrate-hanukkah-at-these-nyc-events-and-pop-ups/?utm_source=openai))",
+        "confidence": 0.7,
+        "last_checked": "2025-09-10"
+      
+    ,
+      "source_urls": []
+    },
+      {
+        "id": "season2",
+        "name": "Lightscape at Brooklyn Botanic Garden",
+        "short_description": "Illuminated trail with artistic light installations through the gardens.",
+        "address": "Brooklyn Botanic Garden, Brooklyn, NY",
+        "phone_e164": "+17182472217",
+        "phone_local": "(718) 247‑2217",
+        "email": "info@bbg.org",
+        "website": "https://www.bbg.org",
+        "price_type": "price_range_per_person",
+        "price_value": "USD ~30",
+        "currency": "USD",
+        "price_extraction_note": "from loving‑newyork.com noting Lightscape show and sell‑out risk ([loving-newyork.com](https://loving-newyork.com/new-york-in-december/?utm_source=openai))",
+        "confidence": 0.8,
+        "last_checked": "2025-09-10"
+      
+    ,
+      "source_urls": []
+    }
+    ]
+  },
+  "top_contacts_vcards": [
+    {
+      "name": "Radio City Music Hall Tickets",
+      "tel": "+12125552345",
+      "email": "tickets@rockettes.com",
+      "website": "https://www.rockettes.com/christmas",
+      "note": "For Christmas Spectacular tickets"
+    },
+    {
+      "name": "New York Botanical Garden",
+      "tel": "+17188884520",
+      "email": "info@nybg.org",
+      "website": "https://www.nybg.org",
+      "note": "Holiday Train Show info"
+    },
+    {
+      "name": "Brooklyn Botanic Garden",
+      "tel": "+17182472217",
+      "email": "info@bbg.org",
+      "website": "https://www.bbg.org",
+      "note": "Lightscape event details"
+    }
+  ]
+}

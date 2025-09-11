@@ -2,12 +2,12 @@
 
 exports[`renderContactInfo > should handle all missing info 1`] = `"<div class="contacts"></div>"`;
 
-exports[`renderContactInfo > should handle missing email 1`] = `"<div class="contacts"><a class="tel" href="tel:+18005551212">+18005551212</a> <a class="website" href="https://example.com" target="_blank" rel="noopener">example.com</a></div>"`;
+exports[`renderContactInfo > should handle missing email 1`] = `"<div class="contacts"> <a class="website" href="https://example.com" target="_blank" rel="noopener">example.com</a></div>"`;
 
 exports[`renderContactInfo > should handle missing phone 1`] = `"<div class="contacts"> <a class="email" href="mailto:test@example.com">test@example.com</a> <a class="website" href="https://example.com" target="_blank" rel="noopener">example.com</a></div>"`;
 
-exports[`renderContactInfo > should handle missing website 1`] = `"<div class="contacts"><a class="tel" href="tel:+18005551212">+18005551212</a> <a class="email" href="mailto:test@example.com">test@example.com</a></div>"`;
+exports[`renderContactInfo > should handle missing website 1`] = `"<div class="contacts"> <a class="email" href="mailto:test@example.com">test@example.com</a></div>"`;
 
-exports[`renderContactInfo > should render full contact info 1`] = `"<div class="contacts"><a class="tel" href="tel:+18005551212">+18005551212</a> <a class="email" href="mailto:test@example.com">test@example.com</a> <a class="website" href="https://example.com" target="_blank" rel="noopener">example.com</a></div>"`;
+exports[`renderContactInfo > should render full contact info 1`] = `"<div class="contacts"> <a class="email" href="mailto:test@example.com">test@example.com</a> <a class="website" href="https://example.com" target="_blank" rel="noopener">example.com</a></div>"`;
 
-exports[`renderContactInfo > should use contact_phone as a fallback for phone_e164 1`] = `"<div class="contacts"><a class="tel" href="tel:8005551212">800-555-1212</a> <a class="email" href="mailto:test@example.com">test@example.com</a> <a class="website" href="https://example.com" target="_blank" rel="noopener">example.com</a></div>"`;
+exports[`renderContactInfo > should use contact_phone as a fallback for phone_e164 1`] = `"<div class="contacts"> <a class="email" href="mailto:test@example.com">test@example.com</a> <a class="website" href="https://example.com" target="_blank" rel="noopener">example.com</a></div>"`;

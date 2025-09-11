@@ -21,7 +21,7 @@ Instructions:
 - For each item found online, include a "price_extraction_note" string explaining how price was obtained (e.g., "from official website pricing table", "estimated from OTA average", "vendor responded via contact form") and a "confidence" float (0-1).
 - Use local currency and, when helpful, provide an approximate USD conversion and the conversion date.
 - Organize suggestions under categories: accommodations, weather, Cultural & Historical Highlights, Local Food & Dining, Markets & Shopping, Outdoor Adventures & Nature, Day Trips / Excursions, Evening & Nightlife Experiences, Seasonal or Special Events.
-- Output FORMAT: produce JSON that matches the schema, then a human summary with bullets and top 3 phone/email contact cards ready to import into contacts.
+- Output FORMAT: produce JSON that matches the schema, a human summary with bullets as in "report" property, and all phone/email contact cards ready to import into contacts.
 `;
 
   return { system, user: prompt, verification: createVerificationPrompt({ groupSize, destination, dates, groupDetails })}
