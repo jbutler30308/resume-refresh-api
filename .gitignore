@@ -8,3 +8,4 @@ node_modules/
 
 # Log files
 logs/
+.env*.local
