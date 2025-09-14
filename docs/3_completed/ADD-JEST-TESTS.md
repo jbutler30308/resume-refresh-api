@@ -1,5 +1,7 @@
 ### Plan: Add Jest and Unit Tests
 
+**This plan is now obsolete. Jest has been replaced by Vitest. All relevant tests have been migrated.**
+
 1.  **Install and Configure Jest:**
     *   Install `jest` as a development dependency.
     *   Add a `test` script to your `package.json`.

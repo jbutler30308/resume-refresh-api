@@ -1,5 +1,7 @@
 # Plan: Address `util._extend` Deprecation Warning
 
+**This has been completed. Dynamic import for ESM modules (e.g., marked) is now used in travel.js. Deprecation warning resolved.**
+
 **Objective**: Identify and resolve the `DeprecationWarning: The 'util._extend' API is deprecated` that appears when running the development server.
 
 ### Steps to Resolve
