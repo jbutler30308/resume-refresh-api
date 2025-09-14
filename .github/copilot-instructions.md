@@ -55,7 +55,7 @@ The API is designed for extensibility and modularity, supporting additional clie
 2.  **User Confirmation Protocol:** When a user requests changes, first inspect `docs/plans/` for a relevant file. If one exists, ask the user to update it, create a new one, or proceed without one. If none exists, ask the user to create one or proceed without one. Honor the user's choice.
 3.  **Plan-File Naming Convention:** `NN.semantic-name.md` (e.g., `01.user-comments.md`).
 4.  **Required Plan Contents:** Problem Statement, Requirements, Technical Approach, Implementation Steps, Testing Strategy, Risks & Mitigation, Dependencies.
-5.  **Exceptions:** This process is not required for documentation updates or minor, single-line bug fixes.
+5.  **Exceptions:** This process is not required for taskmaster-ai, documentation updates, or minor, single-line bug fixes.
 
 
 
