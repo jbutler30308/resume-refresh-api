@@ -1,0 +1,71 @@
+# Task ID: 10
+# Title: Implement Authentication for Travel Coordinators
+# Status: pending
+# Dependencies: 2, 3, 5
+# Priority: high
+# Description: Create authentication middleware to ensure only Travel Coordinators can access history features
+# Details:
+Implement authentication middleware that:
+1. Verifies user is logged in
+2. Checks if user has Travel Coordinator role
+3. Restricts access to history features for unauthorized users
+4. Applies to all history-related API endpoints
+
+Example implementation:
+```javascript
+// Authentication middleware
+function authenticateTravelCoordinator(req, res, next) {
+  // Check if user is authenticated
+  if (!req.session || !req.session.user) {
+    return res.status(401).json({ error: 'Authentication required' });
+  }
+  
+  // Check if user has Travel Coordinator role
+  if (!req.session.user.roles.includes('travel_coordinator')) {
+    return res.status(403).json({ error: 'Access denied. Travel Coordinator role required' });
+  }
+  
+  // User is authenticated and authorized
+  next();
+}
+
+// Apply middleware to all itinerary endpoints
+app.use('/api/itineraries', authenticateTravelCoordinator);
+
+// Or apply to specific endpoints
+app.post('/api/itineraries', authenticateTravelCoordinator, async (req, res) => {
+  // Handler code
+});
+
+// Client-side authentication check
+function checkTravelCoordinatorAccess() {
+  // Fetch current user info
+  fetch('/api/user/current')
+    .then(response => response.json())
+    .then(user => {
+      const isTravelCoordinator = user.roles.includes('travel_coordinator');
+      
+      // Show/hide history features based on role
+      const historyElements = document.querySelectorAll('.history-feature');
+      historyElements.forEach(el => {
+        el.style.display = isTravelCoordinator ? 'block' : 'none';
+      });
+      
+      // Show message if not authorized
+      if (!isTravelCoordinator) {
+        const alertElement = document.createElement('div');
+        alertElement.className = 'alert alert-warning';
+        alertElement.textContent = 'History features are only available to Travel Coordinators.';
+        document.querySelector('.itinerary-container').prepend(alertElement);
+      }
+    })
+    .catch(error => console.error('Error checking user role:', error));
+}
+
+# Test Strategy:
+1. Unit test middleware with various user roles
+2. Integration test API endpoints with authenticated and unauthenticated requests
+3. Test with valid Travel Coordinator credentials
+4. Test with non-Travel Coordinator credentials
+5. Verify UI elements are correctly shown/hidden based on role
+6. Test session expiration handling

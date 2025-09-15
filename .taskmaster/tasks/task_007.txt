@@ -1,0 +1,166 @@
+# Task ID: 7
+# Title: Implement Itinerary History List UI Component
+# Status: pending
+# Dependencies: 3
+# Priority: high
+# Description: Create a UI component to display and filter saved itineraries by location, date, and name
+# Details:
+Update travel.html to include an itinerary history list with:
+1. Search/filter inputs for location, date, and name
+2. Paginated list of itineraries
+3. Sorting options
+4. Selection mechanism for retrieving or deleting itineraries
+
+Example HTML/JS:
+```html
+<!-- Itinerary History List -->
+<div class="itinerary-history">
+  <h3>Itinerary History</h3>
+  
+  <!-- Search/Filter Form -->
+  <div class="filter-form mb-3">
+    <div class="row">
+      <div class="col-md-4">
+        <input type="text" id="filterLocation" class="form-control" placeholder="Filter by location">
+      </div>
+      <div class="col-md-3">
+        <input type="date" id="filterDate" class="form-control">
+      </div>
+      <div class="col-md-3">
+        <input type="text" id="filterName" class="form-control" placeholder="Filter by name">
+      </div>
+      <div class="col-md-2">
+        <button id="applyFilters" class="btn btn-primary w-100">Search</button>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Itineraries List -->
+  <div class="table-responsive">
+    <table class="table table-hover">
+      <thead>
+        <tr>
+          <th>Location</th>
+          <th>Date</th>
+          <th>Name</th>
+          <th>Created</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody id="itinerariesList"></tbody>
+    </table>
+  </div>
+  
+  <!-- Pagination -->
+  <div id="pagination" class="d-flex justify-content-between align-items-center">
+    <div>
+      <span id="paginationInfo">Showing 0 of 0</span>
+    </div>
+    <div>
+      <button id="prevPage" class="btn btn-sm btn-outline-secondary">Previous</button>
+      <button id="nextPage" class="btn btn-sm btn-outline-secondary">Next</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  let currentPage = 1;
+  let totalPages = 1;
+  
+  // Load itineraries with filters
+  async function loadItineraries() {
+    const location = document.getElementById('filterLocation').value;
+    const date = document.getElementById('filterDate').value;
+    const name = document.getElementById('filterName').value;
+    
+    try {
+      const queryParams = new URLSearchParams({
+        page: currentPage,
+        limit: 10
+      });
+      
+      if (location) queryParams.append('location', location);
+      if (date) queryParams.append('date', date);
+      if (name) queryParams.append('name', name);
+      
+      const response = await fetch(`/api/itineraries?${queryParams}`);
+      const data = await response.json();
+      
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to load itineraries');
+      }
+      
+      // Update pagination
+      totalPages = data.pagination.pages;
+      document.getElementById('paginationInfo').textContent = 
+        `Showing ${data.itineraries.length} of ${data.pagination.total}`;
+      
+      // Update buttons state
+      document.getElementById('prevPage').disabled = currentPage <= 1;
+      document.getElementById('nextPage').disabled = currentPage >= totalPages;
+      
+      // Render itineraries
+      const listElement = document.getElementById('itinerariesList');
+      listElement.innerHTML = '';
+      
+      data.itineraries.forEach(itinerary => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td>${itinerary.location}</td>
+          <td>${new Date(itinerary.date).toLocaleDateString()}</td>
+          <td>${itinerary.name || '-'}</td>
+          <td>${new Date(itinerary.createdAt).toLocaleDateString()}</td>
+          <td>
+            <button class="btn btn-sm btn-primary retrieve-btn" data-id="${itinerary._id}">Retrieve</button>
+            <button class="btn btn-sm btn-danger delete-btn" data-id="${itinerary._id}">Delete</button>
+          </td>
+        `;
+        listElement.appendChild(row);
+      });
+      
+      // Add event listeners to buttons
+      document.querySelectorAll('.retrieve-btn').forEach(btn => {
+        btn.addEventListener('click', () => retrieveItinerary(btn.dataset.id));
+      });
+      
+      document.querySelectorAll('.delete-btn').forEach(btn => {
+        btn.addEventListener('click', () => confirmDeleteItinerary(btn.dataset.id));
+      });
+    } catch (error) {
+      console.error('Error loading itineraries:', error);
+    }
+  }
+  
+  // Initial load and event listeners
+  document.addEventListener('DOMContentLoaded', () => {
+    loadItineraries();
+    
+    document.getElementById('applyFilters').addEventListener('click', () => {
+      currentPage = 1;
+      loadItineraries();
+    });
+    
+    document.getElementById('prevPage').addEventListener('click', () => {
+      if (currentPage > 1) {
+        currentPage--;
+        loadItineraries();
+      }
+    });
+    
+    document.getElementById('nextPage').addEventListener('click', () => {
+      if (currentPage < totalPages) {
+        currentPage++;
+        loadItineraries();
+      }
+    });
+  });
+</script>
+```
+
+# Test Strategy:
+1. Manual testing of filter functionality
+2. Verify pagination works correctly
+3. Test with various data volumes (empty, few items, many items)
+4. Verify sorting and filtering accuracy
+5. Test responsive design on different screen sizes
+6. Verify performance with 100+ itineraries
