@@ -142,7 +142,7 @@
         }
       }
     },
-    "top_contacts_vcards": {
+    "contacts_vcards": {
       "type": "array",
       "items": {
         "type": "object",
@@ -183,6 +183,6 @@
   "required": [
     "meta",
     "report",
-    "top_contacts_vcards"
+    "contacts_vcards"
   ]
 }

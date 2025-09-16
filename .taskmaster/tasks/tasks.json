@@ -684,5 +684,1516 @@
       "updated": "2025-09-15T03:50:45.380Z",
       "description": "Tasks for master context"
     }
+  },
+  "travel-itinerary": {
+    "tasks": [
+      {
+        "id": 1,
+        "title": "Design MongoDB Schema for Itinerary History",
+        "description": "Create a MongoDB schema for storing travel itinerary versions with appropriate fields and validation rules",
+        "details": "Design a Mongoose schema with the following fields:\n- location (String, required)\n- date (Date, required)\n- name (String, optional)\n- humanReadable (String, required) - formatted itinerary text\n- jsonVersion (Object, required) - structured itinerary data\n- createdAt (Date, auto-generated)\n\nImplement validation to ensure:\n- Unique compound index on location+date+name\n- Required fields validation\n- Appropriate data types\n\nConnect to MongoDB Atlas cluster 'carriage-house-db-00' and create appropriate collections.\n\nExample schema:\n```javascript\nconst mongoose = require('mongoose');\n\nconst itinerarySchema = new mongoose.Schema({\n  location: { type: String, required: true },\n  date: { type: Date, required: true },\n  name: { type: String, default: '' },\n  humanReadable: { type: String, required: true },\n  jsonVersion: { type: Object, required: true },\n  createdAt: { type: Date, default: Date.now }\n});\n\n// Create compound index for uniqueness\nitinerarySchema.index({ location: 1, date: 1, name: 1 }, { unique: true });\n\nconst Itinerary = mongoose.model('Itinerary', itinerarySchema);\n```",
+        "testStrategy": "1. Unit test schema validation with valid and invalid data\n2. Test uniqueness constraint with duplicate entries\n3. Verify required fields trigger appropriate validation errors\n4. Test connection to MongoDB Atlas cluster\n5. Verify indexes are created correctly",
+        "priority": "high",
+        "dependencies": [],
+        "status": "in-progress",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Define Basic Mongoose Schema Structure",
+            "description": "Create the core Mongoose schema with all required fields and their types for the itinerary history collection.",
+            "dependencies": [],
+            "details": "const mongoose = require('mongoose');\n\nconst itinerarySchema = new mongoose.Schema({\n  location: { type: String, required: true },\n  date: { type: Date, required: true },\n  name: { type: String, default: '' },\n  humanReadable: { type: String, required: true },\n  jsonVersion: { type: Object, required: true },\n  createdAt: { type: Date, default: Date.now }\n});\n\nmodule.exports = itinerarySchema;",
+            "status": "pending",
+            "testStrategy": "Verify schema structure by creating a test instance and checking that all fields are properly defined with correct types and required flags."
+          },
+          {
+            "id": 2,
+            "title": "Add Schema Validation and Indexing",
+            "description": "Implement validation rules and create a unique compound index on location+date+name to ensure data integrity.",
+            "dependencies": [],
+            "details": "// Add to the schema file after defining the schema\n\n// Add custom validation for jsonVersion to ensure it's a valid object\nitinerarySchema.path('jsonVersion').validate(function(value) {\n  return value && typeof value === 'object' && !Array.isArray(value);\n}, 'jsonVersion must be a valid object');\n\n// Create compound index for uniqueness\nitinerarySchema.index({ location: 1, date: 1, name: 1 }, { unique: true });\n\n// Add pre-save middleware to format date if needed\nitinerarySchema.pre('save', function(next) {\n  if (!(this.date instanceof Date)) {\n    this.date = new Date(this.date);\n  }\n  next();\n});",
+            "status": "pending",
+            "testStrategy": "Test schema validation by attempting to save documents with missing required fields, invalid data types, and duplicate entries to verify appropriate validation errors are thrown."
+          },
+          {
+            "id": 3,
+            "title": "Create Mongoose Model and Connection Setup",
+            "description": "Create the Mongoose model from the schema and implement the MongoDB Atlas connection configuration.",
+            "dependencies": [],
+            "details": "// In models/itinerary.js\nconst mongoose = require('mongoose');\nconst itinerarySchema = require('./itinerarySchema');\n\nconst Itinerary = mongoose.model('Itinerary', itinerarySchema);\n\nmodule.exports = Itinerary;\n\n// In config/database.js\nconst mongoose = require('mongoose');\n\nconst connectDB = async () => {\n  try {\n    const conn = await mongoose.connect(process.env.MONGODB_URI || 'mongodb+srv://username:password@carriage-house-db-00.mongodb.net/itineraries?retryWrites=true&w=majority', {\n      useNewUrlParser: true,\n      useUnifiedTopology: true,\n    });\n    console.log(`MongoDB Connected: ${conn.connection.host}`);\n    return conn;\n  } catch (error) {\n    console.error(`Error connecting to MongoDB: ${error.message}`);\n    process.exit(1);\n  }\n};\n\nmodule.exports = connectDB;",
+            "status": "pending",
+            "testStrategy": "Test database connection by creating a test script that connects to the MongoDB Atlas cluster and verifies successful connection. Use a test database for this purpose."
+          },
+          {
+            "id": 4,
+            "title": "Implement CRUD Operations for Itinerary Model",
+            "description": "Create utility functions to perform Create, Read, Update, and Delete operations on the itinerary collection.",
+            "dependencies": [],
+            "details": "// In services/itineraryService.js\nconst Itinerary = require('../models/itinerary');\n\nconst itineraryService = {\n  // Create a new itinerary\n  async createItinerary(itineraryData) {\n    try {\n      const itinerary = new Itinerary(itineraryData);\n      return await itinerary.save();\n    } catch (error) {\n      if (error.code === 11000) {\n        throw new Error('An itinerary with this location, date, and name already exists');\n      }\n      throw error;\n    }\n  },\n\n  // Get itineraries with optional filtering\n  async getItineraries(filters = {}, page = 1, limit = 20) {\n    const skip = (page - 1) * limit;\n    const query = {};\n    \n    if (filters.location) query.location = filters.location;\n    if (filters.date) query.date = new Date(filters.date);\n    if (filters.name) query.name = filters.name;\n    \n    const total = await Itinerary.countDocuments(query);\n    const itineraries = await Itinerary.find(query)\n      .sort({ date: -1, createdAt: -1 })\n      .skip(skip)\n      .limit(limit);\n      \n    return {\n      itineraries,\n      totalPages: Math.ceil(total / limit),\n      currentPage: page\n    };\n  },\n\n  // Get a single itinerary by ID\n  async getItineraryById(id) {\n    return await Itinerary.findById(id);\n  },\n\n  // Update an itinerary\n  async updateItinerary(id, updateData) {\n    return await Itinerary.findByIdAndUpdate(id, updateData, { new: true, runValidators: true });\n  },\n\n  // Delete an itinerary\n  async deleteItinerary(id) {\n    return await Itinerary.findByIdAndDelete(id);\n  }\n};\n\nmodule.exports = itineraryService;",
+            "status": "pending",
+            "testStrategy": "Create unit tests for each CRUD operation using a test database. Test creating, retrieving, updating, and deleting itineraries with various inputs including edge cases."
+          },
+          {
+            "id": 5,
+            "title": "Create Schema Documentation and Usage Examples",
+            "description": "Document the schema design, validation rules, and provide usage examples for the development team.",
+            "dependencies": [],
+            "details": "# Itinerary Schema Documentation\n\n## Schema Structure\n\n```javascript\nconst itinerarySchema = new mongoose.Schema({\n  location: { type: String, required: true },\n  date: { type: Date, required: true },\n  name: { type: String, default: '' },\n  humanReadable: { type: String, required: true },\n  jsonVersion: { type: Object, required: true },\n  createdAt: { type: Date, default: Date.now }\n});\n```\n\n## Field Descriptions\n\n- `location` (String, required): The destination or location of the itinerary\n- `date` (Date, required): The date of the itinerary\n- `name` (String, optional): A custom name for the itinerary, defaults to empty string\n- `humanReadable` (String, required): Formatted text version of the itinerary\n- `jsonVersion` (Object, required): Structured data representation of the itinerary\n- `createdAt` (Date, auto-generated): Timestamp when the itinerary was created\n\n## Validation Rules\n\n- Unique compound index on `location`, `date`, and `name` to prevent duplicates\n- Required fields validation for `location`, `date`, `humanReadable`, and `jsonVersion`\n- Type validation for all fields\n\n## Usage Examples\n\n### Creating a new itinerary\n\n```javascript\nconst itineraryService = require('./services/itineraryService');\n\nconst newItinerary = {\n  location: 'Paris, France',\n  date: new Date('2023-06-15'),\n  name: 'Summer Vacation',\n  humanReadable: 'Day 1: Eiffel Tower\\nDay 2: Louvre Museum',\n  jsonVersion: {\n    days: [\n      { day: 1, activities: ['Eiffel Tower'] },\n      { day: 2, activities: ['Louvre Museum'] }\n    ]\n  }\n};\n\ntry {\n  const savedItinerary = await itineraryService.createItinerary(newItinerary);\n  console.log('Itinerary saved:', savedItinerary);\n} catch (error) {\n  console.error('Error saving itinerary:', error.message);\n}\n```\n\n### Retrieving itineraries with filters\n\n```javascript\n// Get all itineraries for Paris in June 2023\nconst filters = {\n  location: 'Paris, France',\n  date: new Date('2023-06-01') // Will match based on date part only if using appropriate query\n};\n\nconst { itineraries, totalPages, currentPage } = await itineraryService.getItineraries(filters, 1, 10);\n```",
+            "status": "pending",
+            "testStrategy": "Review documentation with team members to ensure clarity and completeness. Verify that usage examples work as expected by implementing them in a test environment."
+          }
+        ]
+      },
+      {
+        "id": 2,
+        "title": "Implement Save Itinerary API Endpoint",
+        "description": "Create a REST API endpoint to save new itinerary versions with validation for required fields and uniqueness",
+        "details": "Implement a POST endpoint at '/api/itineraries' that:\n1. Accepts JSON payload with location, date, name, humanReadable, and jsonVersion\n2. Validates required fields and data types\n3. Checks for duplicates based on location+date+name\n4. Saves valid itineraries to MongoDB\n5. Returns appropriate success/error responses\n\nExample implementation:\n```javascript\napp.post('/api/itineraries', async (req, res) => {\n  try {\n    const { location, date, name, humanReadable, jsonVersion } = req.body;\n    \n    // Validate required fields\n    if (!location || !date || !humanReadable || !jsonVersion) {\n      return res.status(400).json({ error: 'Missing required fields' });\n    }\n    \n    // Create new itinerary\n    const itinerary = new Itinerary({\n      location,\n      date,\n      name: name || '',\n      humanReadable,\n      jsonVersion\n    });\n    \n    // Save to database\n    await itinerary.save();\n    \n    return res.status(201).json({ \n      message: 'Itinerary saved successfully', \n      id: itinerary._id \n    });\n  } catch (error) {\n    // Handle duplicate key error\n    if (error.code === 11000) {\n      return res.status(409).json({ \n        error: 'An itinerary with this location, date, and name already exists' \n      });\n    }\n    return res.status(500).json({ error: error.message });\n  }\n});",
+        "testStrategy": "1. Integration test with valid payload to verify successful save\n2. Test with missing required fields to verify 400 response\n3. Test with duplicate entries to verify 409 response\n4. Verify saved data in MongoDB matches input\n5. Load test with multiple concurrent requests\n6. Verify response time is under 2 seconds",
+        "priority": "high",
+        "dependencies": [
+          1
+        ],
+        "status": "pending",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Define Itinerary Schema and Model",
+            "description": "Create a MongoDB schema and model for the itinerary data structure with proper validation rules and indexes for uniqueness constraints.",
+            "dependencies": [],
+            "details": "Create a new file models/Itinerary.js that defines the Mongoose schema with fields for location, date, name, humanReadable, and jsonVersion. Add validation for required fields and set up a compound index for location+date+name to enforce uniqueness. Export the model for use in the API endpoint.",
+            "status": "pending",
+            "testStrategy": "Unit test the schema validation by creating valid and invalid itinerary objects and checking that validation works as expected."
+          },
+          {
+            "id": 2,
+            "title": "Implement Request Validation Middleware",
+            "description": "Create middleware to validate incoming request data before processing the save operation.",
+            "dependencies": [
+              "2.1"
+            ],
+            "details": "Create a validation middleware function that checks for required fields (location, date, humanReadable, jsonVersion), validates data types (e.g., date format, JSON structure), and returns appropriate error responses for invalid requests. This middleware will be applied to the POST endpoint.",
+            "status": "pending",
+            "testStrategy": "Unit test the validation middleware with various input scenarios including missing fields, invalid data types, and valid data."
+          },
+          {
+            "id": 3,
+            "title": "Implement Duplicate Check Logic",
+            "description": "Create a function to check for existing itineraries with the same location, date, and name combination.",
+            "dependencies": [
+              "2.1"
+            ],
+            "details": "Implement a function that queries the database for existing itineraries matching the location+date+name combination. This can either be handled through the unique index (catching the duplicate key error) or by performing an explicit check before attempting to save.",
+            "status": "pending",
+            "testStrategy": "Test the duplicate detection by attempting to save itineraries with the same key fields and verifying that duplicates are properly identified."
+          },
+          {
+            "id": 4,
+            "title": "Create POST Endpoint Handler",
+            "description": "Implement the core API endpoint handler function that processes validated requests and saves itineraries to MongoDB.",
+            "dependencies": [
+              "2.1",
+              "2.2",
+              "2.3"
+            ],
+            "details": "Create the main route handler for POST /api/itineraries that uses the validation middleware, creates a new Itinerary document from the request body, saves it to MongoDB, and returns the appropriate success response with the new itinerary ID.",
+            "status": "pending",
+            "testStrategy": "Integration test the endpoint with valid payloads to verify successful saves, and check that the saved data in MongoDB matches the input."
+          },
+          {
+            "id": 5,
+            "title": "Implement Error Handling and Response Formatting",
+            "description": "Add comprehensive error handling to the endpoint and standardize response formats for success and error cases.",
+            "dependencies": [
+              "2.4"
+            ],
+            "details": "Enhance the endpoint with try/catch blocks to handle various error scenarios including validation errors, duplicate key errors (code 11000), database connection issues, and unexpected errors. Format responses consistently with appropriate HTTP status codes (201 for success, 400 for validation errors, 409 for conflicts, 500 for server errors) and include helpful error messages.",
+            "status": "pending",
+            "testStrategy": "Test error handling by triggering various error conditions and verifying that the appropriate status codes and error messages are returned. Test with missing required fields, duplicate entries, and simulated server errors."
+          }
+        ]
+      },
+      {
+        "id": 3,
+        "title": "Implement Retrieve Itineraries API Endpoint",
+        "description": "Create a REST API endpoint to retrieve and filter itinerary versions by location, date, and name",
+        "details": "Implement a GET endpoint at '/api/itineraries' that:\n1. Accepts query parameters for location, date, and name\n2. Returns a list of matching itineraries\n3. Supports pagination for large result sets\n4. Sorts results by date (descending) by default\n\nExample implementation:\n```javascript\napp.get('/api/itineraries', async (req, res) => {\n  try {\n    const { location, date, name, page = 1, limit = 20 } = req.query;\n    const query = {};\n    \n    // Build query based on provided filters\n    if (location) query.location = { $regex: location, $options: 'i' };\n    if (date) query.date = new Date(date);\n    if (name) query.name = { $regex: name, $options: 'i' };\n    \n    // Execute query with pagination\n    const skip = (page - 1) * limit;\n    const itineraries = await Itinerary\n      .find(query)\n      .sort({ date: -1 })\n      .skip(skip)\n      .limit(parseInt(limit))\n      .select('-jsonVersion'); // Exclude large JSON data in list view\n    \n    // Get total count for pagination\n    const total = await Itinerary.countDocuments(query);\n    \n    return res.status(200).json({\n      itineraries,\n      pagination: {\n        total,\n        page: parseInt(page),\n        pages: Math.ceil(total / limit)\n      }\n    });\n  } catch (error) {\n    return res.status(500).json({ error: error.message });\n  }\n});",
+        "testStrategy": "1. Integration test with various filter combinations\n2. Verify pagination works correctly\n3. Test with non-existent filters returns empty array\n4. Verify sorting order is correct\n5. Test performance with large datasets\n6. Verify response time is under 2 seconds",
+        "priority": "high",
+        "dependencies": [
+          1
+        ],
+        "status": "pending",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Define query parameter validation and parsing",
+            "description": "Implement validation and parsing logic for the query parameters (location, date, name, page, limit) to ensure they are properly formatted before using them in database queries.",
+            "dependencies": [],
+            "details": "Create utility functions to validate and parse query parameters:\n1. Validate that 'page' and 'limit' are positive integers\n2. Parse 'date' parameter into a valid Date object if provided\n3. Sanitize text inputs (location, name) to prevent injection attacks\n4. Set default values for pagination (page=1, limit=20)\n5. Return appropriate error messages for invalid parameters",
+            "status": "pending",
+            "testStrategy": "Unit test each validation function with valid and invalid inputs. Test edge cases like negative page numbers, non-numeric limits, and malformed date strings."
+          },
+          {
+            "id": 2,
+            "title": "Implement database query construction",
+            "description": "Build the MongoDB query object based on the provided filter parameters, ensuring proper regex usage for text fields and date handling.",
+            "dependencies": [
+              "3.1"
+            ],
+            "details": "Create a function that builds a MongoDB query object:\n1. Add case-insensitive regex search for location and name parameters if provided\n2. Handle date parameter with proper date object conversion\n3. Implement proper error handling for malformed query parameters\n4. Return a complete query object that can be passed to Mongoose's find() method",
+            "status": "pending",
+            "testStrategy": "Unit test the query builder with various combinations of parameters. Verify the generated query matches expected MongoDB syntax."
+          },
+          {
+            "id": 3,
+            "title": "Implement pagination and sorting logic",
+            "description": "Create the logic for paginating results and sorting them by date in descending order, calculating proper skip and limit values.",
+            "dependencies": [
+              "3.2"
+            ],
+            "details": "Implement pagination and sorting functionality:\n1. Calculate 'skip' value based on page number and limit\n2. Apply sort by date in descending order as default\n3. Select fields to return (exclude large fields like jsonVersion)\n4. Calculate total pages based on query results count\n5. Structure pagination metadata (total, current page, total pages)",
+            "status": "pending",
+            "testStrategy": "Test pagination with various page sizes and page numbers. Verify correct items are returned for each page. Test sorting order is correctly applied."
+          },
+          {
+            "id": 4,
+            "title": "Create the GET endpoint handler",
+            "description": "Implement the actual Express route handler for GET /api/itineraries that uses the query, pagination, and sorting logic.",
+            "dependencies": [
+              "3.1",
+              "3.2",
+              "3.3"
+            ],
+            "details": "Create the Express route handler:\n1. Extract query parameters from req.query\n2. Use the validation and query building functions\n3. Execute the database query with pagination and sorting\n4. Get total count for pagination metadata\n5. Structure the response with itineraries array and pagination object\n6. Implement proper error handling and status codes",
+            "status": "pending",
+            "testStrategy": "Integration test the endpoint with various query parameters. Test error handling by triggering database errors. Verify response structure matches expected format."
+          },
+          {
+            "id": 5,
+            "title": "Implement performance optimization and testing",
+            "description": "Optimize the endpoint for performance with large datasets and implement comprehensive testing to ensure reliability.",
+            "dependencies": [
+              "3.4"
+            ],
+            "details": "Add performance optimizations and testing:\n1. Add database indexes for frequently queried fields (location, date, name)\n2. Implement query timeout handling to prevent long-running queries\n3. Add response caching for common queries\n4. Create load testing scripts to verify performance under load\n5. Document the API endpoint with examples and parameter descriptions\n6. Implement monitoring for query performance",
+            "status": "pending",
+            "testStrategy": "Load test with large datasets (1000+ records). Measure response times with various filter combinations. Verify response time stays under 2 seconds. Test cache hit/miss scenarios."
+          }
+        ]
+      },
+      {
+        "id": 4,
+        "title": "Implement Retrieve Single Itinerary API Endpoint",
+        "description": "Create a REST API endpoint to retrieve a specific itinerary version by ID with complete details",
+        "details": "Implement a GET endpoint at '/api/itineraries/:id' that:\n1. Accepts an itinerary ID as a path parameter\n2. Returns the complete itinerary including human-readable and JSON versions\n3. Returns appropriate error if itinerary not found\n\nExample implementation:\n```javascript\napp.get('/api/itineraries/:id', async (req, res) => {\n  try {\n    const { id } = req.params;\n    \n    // Validate ID format\n    if (!mongoose.Types.ObjectId.isValid(id)) {\n      return res.status(400).json({ error: 'Invalid itinerary ID format' });\n    }\n    \n    // Find itinerary by ID\n    const itinerary = await Itinerary.findById(id);\n    \n    // Handle not found\n    if (!itinerary) {\n      return res.status(404).json({ error: 'Itinerary not found' });\n    }\n    \n    return res.status(200).json(itinerary);\n  } catch (error) {\n    return res.status(500).json({ error: error.message });\n  }\n});",
+        "testStrategy": "1. Integration test with valid ID to verify successful retrieval\n2. Test with invalid ID format to verify 400 response\n3. Test with non-existent ID to verify 404 response\n4. Verify all fields are returned correctly\n5. Verify response time is under 2 seconds",
+        "priority": "high",
+        "dependencies": [
+          1,
+          3
+        ],
+        "status": "pending",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Create route handler function for GET /api/itineraries/:id",
+            "description": "Implement the basic route handler function that accepts an itinerary ID parameter and sets up the try-catch error handling structure.",
+            "dependencies": [],
+            "details": "Create the route handler function for the GET endpoint that will retrieve a single itinerary. Set up the basic structure with parameter extraction and error handling. Include the route registration in the Express app. The function should extract the ID parameter and set up proper error handling with appropriate HTTP status codes.",
+            "status": "pending",
+            "testStrategy": "Test the route registration with a mock handler to ensure the endpoint is properly configured. Verify error handling by triggering exceptions and checking response status codes."
+          },
+          {
+            "id": 2,
+            "title": "Implement ID validation logic",
+            "description": "Add validation for the itinerary ID to ensure it's in the correct format before attempting database operations.",
+            "dependencies": [
+              "4.1"
+            ],
+            "details": "Use mongoose.Types.ObjectId.isValid() to validate that the provided ID is in the correct format for MongoDB. Return a 400 Bad Request response with an appropriate error message if the ID format is invalid. This prevents unnecessary database queries for malformed IDs and provides clear feedback to the client.",
+            "status": "pending",
+            "testStrategy": "Test with various invalid ID formats (too short, non-hexadecimal characters, etc.) to verify 400 responses. Test with valid ID format to ensure the validation passes correctly."
+          },
+          {
+            "id": 3,
+            "title": "Implement database query to retrieve itinerary by ID",
+            "description": "Create the database query to find and retrieve the complete itinerary document by its ID.",
+            "dependencies": [
+              "4.2"
+            ],
+            "details": "Use Mongoose's findById method to query the database for the itinerary with the specified ID. Ensure all necessary fields are included in the returned document. Consider using .lean() for better performance if no document modifications are needed. Handle the case where no document is found by returning a 404 Not Found response.",
+            "status": "pending",
+            "testStrategy": "Test with existing itinerary IDs to verify successful retrieval. Test with valid but non-existent IDs to verify 404 responses. Verify all expected fields are present in the returned document."
+          },
+          {
+            "id": 4,
+            "title": "Add response formatting for successful retrieval",
+            "description": "Format the response to include both human-readable and JSON versions of the itinerary data.",
+            "dependencies": [
+              "4.3"
+            ],
+            "details": "When an itinerary is successfully retrieved, format the response to include both the human-readable representation and the JSON version of the itinerary. Ensure the response structure is consistent with other API endpoints. Return a 200 OK status code with the formatted itinerary data.",
+            "status": "pending",
+            "testStrategy": "Verify the response includes both human-readable and JSON versions of the itinerary. Test with different itinerary data to ensure consistent formatting. Check response headers for correct content type."
+          },
+          {
+            "id": 5,
+            "title": "Implement comprehensive error handling and logging",
+            "description": "Enhance error handling to provide meaningful error messages and implement logging for debugging and monitoring.",
+            "dependencies": [
+              "4.4"
+            ],
+            "details": "Improve the error handling to provide specific error messages for different failure scenarios. Implement logging of errors for debugging and monitoring purposes. Handle edge cases such as database connection issues or timeout errors. Ensure all error responses follow a consistent format with appropriate HTTP status codes (400 for client errors, 404 for not found, 500 for server errors).",
+            "status": "pending",
+            "testStrategy": "Test error scenarios by mocking database failures. Verify appropriate status codes and error messages for different error types. Check that sensitive error details are not exposed to clients in production mode."
+          }
+        ]
+      },
+      {
+        "id": 5,
+        "title": "Implement Delete Itinerary API Endpoint",
+        "description": "Create a REST API endpoint to delete a specific itinerary version by ID",
+        "details": "Implement a DELETE endpoint at '/api/itineraries/:id' that:\n1. Accepts an itinerary ID as a path parameter\n2. Deletes the specified itinerary from the database\n3. Returns appropriate success/error responses\n4. Requires authentication as a Travel Coordinator\n\nExample implementation:\n```javascript\napp.delete('/api/itineraries/:id', authenticateTravelCoordinator, async (req, res) => {\n  try {\n    const { id } = req.params;\n    \n    // Validate ID format\n    if (!mongoose.Types.ObjectId.isValid(id)) {\n      return res.status(400).json({ error: 'Invalid itinerary ID format' });\n    }\n    \n    // Find and delete itinerary\n    const result = await Itinerary.findByIdAndDelete(id);\n    \n    // Handle not found\n    if (!result) {\n      return res.status(404).json({ error: 'Itinerary not found' });\n    }\n    \n    return res.status(200).json({ message: 'Itinerary deleted successfully' });\n  } catch (error) {\n    return res.status(500).json({ error: error.message });\n  }\n});\n\n// Authentication middleware (to be implemented)\nfunction authenticateTravelCoordinator(req, res, next) {\n  // Check if user is authenticated and has Travel Coordinator role\n  // If not, return 401 or 403\n  // If yes, call next()\n}",
+        "testStrategy": "1. Integration test with valid ID to verify successful deletion\n2. Test with invalid ID format to verify 400 response\n3. Test with non-existent ID to verify 404 response\n4. Verify deleted itinerary is no longer retrievable\n5. Test authentication requirements\n6. Verify response time is under 2 seconds",
+        "priority": "medium",
+        "dependencies": [
+          1,
+          4
+        ],
+        "status": "pending",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Implement authenticateTravelCoordinator middleware",
+            "description": "Create the authentication middleware that verifies if the user is logged in and has the Travel Coordinator role",
+            "dependencies": [],
+            "details": "Create a middleware function that checks the user's session for authentication status and role. The function should: 1) Verify if req.session and req.session.user exist, 2) Check if the user has the Travel Coordinator role, 3) Allow the request to proceed if authorized by calling next(), 4) Return 401 if not authenticated or 403 if authenticated but not authorized. Include error handling for edge cases.",
+            "status": "pending",
+            "testStrategy": "Unit test the middleware with various scenarios: authenticated Travel Coordinator, authenticated non-Travel Coordinator, unauthenticated user, and malformed session data. Mock the req, res, and next objects for testing."
+          },
+          {
+            "id": 2,
+            "title": "Implement ID validation function",
+            "description": "Create a utility function to validate the itinerary ID format",
+            "dependencies": [],
+            "details": "Create a reusable function that validates if the provided ID is in the correct MongoDB ObjectId format. The function should use mongoose.Types.ObjectId.isValid() to check the format and return a boolean indicating whether the ID is valid. This will be used in the DELETE endpoint to validate the ID before attempting to delete the itinerary.",
+            "status": "pending",
+            "testStrategy": "Unit test the validation function with various inputs: valid ObjectIds, invalid strings, null values, undefined values, and non-string values."
+          },
+          {
+            "id": 3,
+            "title": "Implement database deletion logic",
+            "description": "Create the function to delete an itinerary from the database by ID",
+            "dependencies": [
+              "5.2"
+            ],
+            "details": "Implement the core database operation to delete an itinerary by ID. Use Mongoose's findByIdAndDelete method to locate and remove the itinerary in a single operation. The function should handle the case where no document is found by returning null or a specific value that indicates the document wasn't found. Include proper error handling for database connection issues.",
+            "status": "pending",
+            "testStrategy": "Test the deletion function with valid IDs that exist in the database, valid IDs that don't exist, and with database connection failures (using mocks). Verify that the document is actually removed from the database after successful deletion."
+          },
+          {
+            "id": 4,
+            "title": "Implement DELETE endpoint handler",
+            "description": "Create the main route handler for the DELETE /api/itineraries/:id endpoint",
+            "dependencies": [
+              "5.1",
+              "5.2",
+              "5.3"
+            ],
+            "details": "Implement the Express route handler that ties together the authentication, validation, and deletion logic. The handler should: 1) Extract the ID from req.params, 2) Validate the ID format, 3) Attempt to delete the itinerary, 4) Handle the case where the itinerary is not found, 5) Return appropriate success/error responses with correct HTTP status codes. Use try/catch for error handling and ensure all error paths return appropriate responses.",
+            "status": "pending",
+            "testStrategy": "Integration test the endpoint with various scenarios: successful deletion, invalid ID format, non-existent ID, and server errors. Test both authenticated and unauthenticated requests to verify the authentication middleware is working correctly."
+          },
+          {
+            "id": 5,
+            "title": "Register the route in the Express application",
+            "description": "Add the DELETE endpoint to the Express application router",
+            "dependencies": [
+              "5.4"
+            ],
+            "details": "Register the DELETE endpoint in the Express application by adding the route to the appropriate router. Ensure the route is defined with the correct path ('/api/itineraries/:id') and includes the authenticateTravelCoordinator middleware. If using a modular approach with separate route files, make sure to export the router and import it in the main application file. Verify that the route is correctly mounted at the expected path.",
+            "status": "pending",
+            "testStrategy": "Test that the route is correctly registered by examining the Express application's route stack or by making a request to the endpoint and verifying it doesn't return a 404 Not Found error. Ensure the authentication middleware is correctly applied to the route."
+          }
+        ]
+      },
+      {
+        "id": 6,
+        "title": "Implement Save Itinerary UI Component",
+        "description": "Create a UI component for saving itineraries with location, date, and name inputs",
+        "details": "Update travel.html to include a save itinerary form with:\n1. Input fields for location (required), date (required), and name (optional)\n2. Validation for required fields\n3. Submit button to save the itinerary\n4. Success/error notifications\n5. Handling for duplicate entry warnings\n\nExample HTML/JS:\n```html\n<!-- Save Itinerary Form -->\n<div class=\"save-itinerary-form\">\n  <h3>Save Itinerary</h3>\n  <form id=\"saveItineraryForm\">\n    <div class=\"form-group\">\n      <label for=\"location\">Location*</label>\n      <input type=\"text\" id=\"location\" name=\"location\" required>\n    </div>\n    <div class=\"form-group\">\n      <label for=\"date\">Date*</label>\n      <input type=\"date\" id=\"date\" name=\"date\" required>\n    </div>\n    <div class=\"form-group\">\n      <label for=\"name\">Name (Optional)</label>\n      <input type=\"text\" id=\"name\" name=\"name\">\n    </div>\n    <button type=\"submit\" class=\"btn btn-primary\">Save Itinerary</button>\n  </form>\n  <div id=\"saveResult\" class=\"mt-3\"></div>\n</div>\n\n<script>\n  document.getElementById('saveItineraryForm').addEventListener('submit', async (e) => {\n    e.preventDefault();\n    const location = document.getElementById('location').value;\n    const date = document.getElementById('date').value;\n    const name = document.getElementById('name').value;\n    \n    // Get current itinerary data\n    const humanReadable = document.getElementById('itineraryOutput').innerText;\n    const jsonVersion = window.currentItineraryData; // Assuming this is set elsewhere\n    \n    try {\n      const response = await fetch('/api/itineraries', {\n        method: 'POST',\n        headers: { 'Content-Type': 'application/json' },\n        body: JSON.stringify({ location, date, name, humanReadable, jsonVersion })\n      });\n      \n      const data = await response.json();\n      \n      if (!response.ok) {\n        throw new Error(data.error || 'Failed to save itinerary');\n      }\n      \n      document.getElementById('saveResult').innerHTML = \n        `<div class=\"alert alert-success\">Itinerary saved successfully!</div>`;\n    } catch (error) {\n      document.getElementById('saveResult').innerHTML = \n        `<div class=\"alert alert-danger\">${error.message}</div>`;\n    }\n  });\n</script>\n```",
+        "testStrategy": "1. Manual testing of form submission with valid and invalid data\n2. Verify required field validation works\n3. Test error handling for duplicate entries\n4. Verify success messages appear correctly\n5. Test with various itinerary data sizes\n6. Verify form is responsive on different screen sizes",
+        "priority": "high",
+        "dependencies": [
+          2
+        ],
+        "status": "pending",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Create HTML structure for save itinerary form",
+            "description": "Add the HTML markup for the save itinerary form to travel.html, including all required input fields, labels, and the submit button.",
+            "dependencies": [],
+            "details": "Add the following HTML structure to travel.html in an appropriate location:\n- Create a container div with class 'save-itinerary-form'\n- Add a heading 'Save Itinerary'\n- Create a form with id 'saveItineraryForm'\n- Add form groups for location (required), date (required), and name (optional) inputs\n- Include appropriate labels and input attributes\n- Add a submit button with appropriate styling\n- Create a div with id 'saveResult' for displaying notifications",
+            "status": "pending",
+            "testStrategy": "Verify all form elements render correctly and have proper attributes (required, types, etc.). Check form layout on different screen sizes."
+          },
+          {
+            "id": 2,
+            "title": "Implement form validation for required fields",
+            "description": "Add client-side validation to ensure required fields (location and date) are filled before submission.",
+            "dependencies": [
+              "6.1"
+            ],
+            "details": "Implement validation logic that:\n- Uses HTML5 required attributes on mandatory fields\n- Adds JavaScript validation to check if location and date fields are filled\n- Prevents form submission if validation fails\n- Displays appropriate error messages next to invalid fields\n- Adds visual indicators (like red borders) for invalid fields\n- Ensures date field accepts only valid date formats",
+            "status": "pending",
+            "testStrategy": "Test form submission with empty required fields. Verify error messages appear correctly. Test with invalid date formats. Ensure form cannot be submitted until all required fields are valid."
+          },
+          {
+            "id": 3,
+            "title": "Implement form submission handler",
+            "description": "Create the JavaScript function to handle form submission, collect form data, and prepare it for API submission.",
+            "dependencies": [
+              "6.1",
+              "6.2"
+            ],
+            "details": "Create an event listener for the form submit event that:\n- Prevents default form submission\n- Collects values from all form fields\n- Retrieves current itinerary data (both human-readable and JSON versions)\n- Packages the data into the correct format for API submission\n- Includes error handling for missing itinerary data\n- Disables the submit button during submission to prevent duplicate submissions\n- Shows a loading indicator during submission",
+            "status": "pending",
+            "testStrategy": "Test form submission with various combinations of valid data. Verify the collected data matches user input. Check that the current itinerary data is correctly included in the submission."
+          },
+          {
+            "id": 4,
+            "title": "Implement API communication for saving itineraries",
+            "description": "Create the fetch request to send the itinerary data to the server API endpoint and handle the response.",
+            "dependencies": [
+              "6.3"
+            ],
+            "details": "Implement the fetch API call that:\n- Sends a POST request to '/api/itineraries'\n- Sets appropriate headers (Content-Type: application/json)\n- Converts the collected form data to JSON format\n- Implements proper error handling for network issues\n- Parses the JSON response from the server\n- Handles both successful and error responses from the API\n- Includes timeout handling for slow connections",
+            "status": "pending",
+            "testStrategy": "Test API communication with mock responses. Verify successful submissions are handled correctly. Test error handling with various error scenarios (network error, server error, validation error)."
+          },
+          {
+            "id": 5,
+            "title": "Implement success and error notifications",
+            "description": "Create UI components to display success messages, error notifications, and duplicate entry warnings to the user.",
+            "dependencies": [
+              "6.4"
+            ],
+            "details": "Implement notification handling that:\n- Displays a success message when an itinerary is saved successfully\n- Shows specific error messages for different error types\n- Handles duplicate entry warnings (HTTP 409) with a specific message\n- Formats notifications with appropriate styling (green for success, red for errors)\n- Makes notifications dismissible\n- Automatically clears notifications after a set time period\n- Ensures notifications are accessible and visible to the user",
+            "status": "pending",
+            "testStrategy": "Test all notification types (success, general error, validation error, duplicate warning). Verify notifications are clearly visible and properly styled. Test that notifications can be dismissed and auto-clear correctly."
+          }
+        ]
+      },
+      {
+        "id": 7,
+        "title": "Implement Itinerary History List UI Component",
+        "description": "Create a UI component to display and filter saved itineraries by location, date, and name",
+        "details": "Update travel.html to include an itinerary history list with:\n1. Search/filter inputs for location, date, and name\n2. Paginated list of itineraries\n3. Sorting options\n4. Selection mechanism for retrieving or deleting itineraries\n\nExample HTML/JS:\n```html\n<!-- Itinerary History List -->\n<div class=\"itinerary-history\">\n  <h3>Itinerary History</h3>\n  \n  <!-- Search/Filter Form -->\n  <div class=\"filter-form mb-3\">\n    <div class=\"row\">\n      <div class=\"col-md-4\">\n        <input type=\"text\" id=\"filterLocation\" class=\"form-control\" placeholder=\"Filter by location\">\n      </div>\n      <div class=\"col-md-3\">\n        <input type=\"date\" id=\"filterDate\" class=\"form-control\">\n      </div>\n      <div class=\"col-md-3\">\n        <input type=\"text\" id=\"filterName\" class=\"form-control\" placeholder=\"Filter by name\">\n      </div>\n      <div class=\"col-md-2\">\n        <button id=\"applyFilters\" class=\"btn btn-primary w-100\">Search</button>\n      </div>\n    </div>\n  </div>\n  \n  <!-- Itineraries List -->\n  <div class=\"table-responsive\">\n    <table class=\"table table-hover\">\n      <thead>\n        <tr>\n          <th>Location</th>\n          <th>Date</th>\n          <th>Name</th>\n          <th>Created</th>\n          <th>Actions</th>\n        </tr>\n      </thead>\n      <tbody id=\"itinerariesList\"></tbody>\n    </table>\n  </div>\n  \n  <!-- Pagination -->\n  <div id=\"pagination\" class=\"d-flex justify-content-between align-items-center\">\n    <div>\n      <span id=\"paginationInfo\">Showing 0 of 0</span>\n    </div>\n    <div>\n      <button id=\"prevPage\" class=\"btn btn-sm btn-outline-secondary\">Previous</button>\n      <button id=\"nextPage\" class=\"btn btn-sm btn-outline-secondary\">Next</button>\n    </div>\n  </div>\n</div>\n\n<script>\n  let currentPage = 1;\n  let totalPages = 1;\n  \n  // Load itineraries with filters\n  async function loadItineraries() {\n    const location = document.getElementById('filterLocation').value;\n    const date = document.getElementById('filterDate').value;\n    const name = document.getElementById('filterName').value;\n    \n    try {\n      const queryParams = new URLSearchParams({\n        page: currentPage,\n        limit: 10\n      });\n      \n      if (location) queryParams.append('location', location);\n      if (date) queryParams.append('date', date);\n      if (name) queryParams.append('name', name);\n      \n      const response = await fetch(`/api/itineraries?${queryParams}`);\n      const data = await response.json();\n      \n      if (!response.ok) {\n        throw new Error(data.error || 'Failed to load itineraries');\n      }\n      \n      // Update pagination\n      totalPages = data.pagination.pages;\n      document.getElementById('paginationInfo').textContent = \n        `Showing ${data.itineraries.length} of ${data.pagination.total}`;\n      \n      // Update buttons state\n      document.getElementById('prevPage').disabled = currentPage <= 1;\n      document.getElementById('nextPage').disabled = currentPage >= totalPages;\n      \n      // Render itineraries\n      const listElement = document.getElementById('itinerariesList');\n      listElement.innerHTML = '';\n      \n      data.itineraries.forEach(itinerary => {\n        const row = document.createElement('tr');\n        row.innerHTML = `\n          <td>${itinerary.location}</td>\n          <td>${new Date(itinerary.date).toLocaleDateString()}</td>\n          <td>${itinerary.name || '-'}</td>\n          <td>${new Date(itinerary.createdAt).toLocaleDateString()}</td>\n          <td>\n            <button class=\"btn btn-sm btn-primary retrieve-btn\" data-id=\"${itinerary._id}\">Retrieve</button>\n            <button class=\"btn btn-sm btn-danger delete-btn\" data-id=\"${itinerary._id}\">Delete</button>\n          </td>\n        `;\n        listElement.appendChild(row);\n      });\n      \n      // Add event listeners to buttons\n      document.querySelectorAll('.retrieve-btn').forEach(btn => {\n        btn.addEventListener('click', () => retrieveItinerary(btn.dataset.id));\n      });\n      \n      document.querySelectorAll('.delete-btn').forEach(btn => {\n        btn.addEventListener('click', () => confirmDeleteItinerary(btn.dataset.id));\n      });\n    } catch (error) {\n      console.error('Error loading itineraries:', error);\n    }\n  }\n  \n  // Initial load and event listeners\n  document.addEventListener('DOMContentLoaded', () => {\n    loadItineraries();\n    \n    document.getElementById('applyFilters').addEventListener('click', () => {\n      currentPage = 1;\n      loadItineraries();\n    });\n    \n    document.getElementById('prevPage').addEventListener('click', () => {\n      if (currentPage > 1) {\n        currentPage--;\n        loadItineraries();\n      }\n    });\n    \n    document.getElementById('nextPage').addEventListener('click', () => {\n      if (currentPage < totalPages) {\n        currentPage++;\n        loadItineraries();\n      }\n    });\n  });\n</script>\n```",
+        "testStrategy": "1. Manual testing of filter functionality\n2. Verify pagination works correctly\n3. Test with various data volumes (empty, few items, many items)\n4. Verify sorting and filtering accuracy\n5. Test responsive design on different screen sizes\n6. Verify performance with 100+ itineraries",
+        "priority": "high",
+        "dependencies": [
+          3
+        ],
+        "status": "pending",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Create HTML Structure for Itinerary History Component",
+            "description": "Implement the basic HTML structure for the itinerary history list component including the filter form, table for displaying itineraries, and pagination controls.",
+            "dependencies": [],
+            "details": "Add the following HTML structure to travel.html:\n1. Create a container div with class 'itinerary-history'\n2. Add a heading element for the section\n3. Implement the filter form with inputs for location, date, and name\n4. Create a responsive table structure with appropriate columns (Location, Date, Name, Created, Actions)\n5. Add pagination controls with previous/next buttons and pagination info\n6. Ensure all elements have proper IDs for JavaScript interaction",
+            "status": "pending",
+            "testStrategy": "Verify the HTML structure renders correctly in different browsers and screen sizes. Check that all form elements are accessible and properly labeled."
+          },
+          {
+            "id": 2,
+            "title": "Implement Itinerary Loading and Display Logic",
+            "description": "Create JavaScript functionality to load itineraries from the API and display them in the table with proper formatting.",
+            "dependencies": [
+              "7.1"
+            ],
+            "details": "Create JavaScript functions to:\n1. Implement the loadItineraries() function that fetches data from the API with appropriate query parameters\n2. Parse the API response and dynamically generate table rows for each itinerary\n3. Format dates and other data for display\n4. Handle empty states and error conditions\n5. Update the pagination information based on API response\n6. Initialize the component on page load",
+            "status": "pending",
+            "testStrategy": "Test with various API responses including empty results, single page results, and multi-page results. Verify error handling works correctly when API calls fail."
+          },
+          {
+            "id": 3,
+            "title": "Implement Filtering and Pagination Functionality",
+            "description": "Add JavaScript event handlers for the filter form and pagination controls to allow users to search and navigate through itineraries.",
+            "dependencies": [
+              "7.2"
+            ],
+            "details": "Implement event handlers for:\n1. The search/filter button to apply filters and reset to page 1\n2. Previous and Next pagination buttons to navigate between pages\n3. Add input event listeners for filter fields to enable real-time filtering (optional)\n4. Maintain filter state between pagination actions\n5. Update UI elements (like disabled state of pagination buttons) based on current page and total pages\n6. Implement URL query parameter updates to make filtered views shareable",
+            "status": "pending",
+            "testStrategy": "Test filter combinations with various inputs. Verify pagination works correctly at boundaries (first page, last page). Test that filter state is maintained when navigating pages."
+          },
+          {
+            "id": 4,
+            "title": "Implement Itinerary Retrieval Functionality",
+            "description": "Add functionality to retrieve a selected itinerary and load it into the current view when the user clicks the Retrieve button.",
+            "dependencies": [
+              "7.2"
+            ],
+            "details": "Implement the retrieveItinerary() function that:\n1. Takes an itinerary ID as parameter\n2. Shows a loading indicator during the API request\n3. Makes an API call to fetch the complete itinerary data\n4. Updates the current itinerary view with the retrieved data\n5. Scrolls the user to the itinerary view\n6. Displays appropriate success/error messages\n7. Adds event listeners to all retrieve buttons in the table",
+            "status": "pending",
+            "testStrategy": "Test retrieval with various itinerary types. Verify the UI updates correctly after retrieval. Test error handling when retrieval fails. Verify loading indicators appear and disappear appropriately."
+          },
+          {
+            "id": 5,
+            "title": "Implement Itinerary Deletion Functionality",
+            "description": "Add functionality to delete itineraries with confirmation dialog and update the list after successful deletion.",
+            "dependencies": [
+              "7.2"
+            ],
+            "details": "Implement the deletion workflow:\n1. Create a confirmDeleteItinerary() function that shows a confirmation dialog\n2. Implement deleteItinerary() function that makes the API call to delete the itinerary\n3. Show loading state during deletion\n4. Handle success by refreshing the itinerary list\n5. Handle errors with appropriate user messages\n6. Add event listeners to all delete buttons in the table\n7. Ensure the list updates correctly after deletion without requiring a full page reload",
+            "status": "pending",
+            "testStrategy": "Test the confirmation dialog appears correctly. Verify successful deletions remove items from the list. Test error handling when deletion fails. Verify the UI updates correctly after deletion."
+          }
+        ]
+      },
+      {
+        "id": 8,
+        "title": "Implement Retrieve Itinerary UI Functionality",
+        "description": "Create UI functionality to retrieve and display a selected itinerary from history",
+        "details": "Implement JavaScript functionality to:\n1. Retrieve a selected itinerary by ID\n2. Load the itinerary data into the current view\n3. Display success/error messages\n\nExample JavaScript:\n```javascript\nasync function retrieveItinerary(id) {\n  try {\n    // Show loading indicator\n    const loadingIndicator = document.createElement('div');\n    loadingIndicator.id = 'loadingIndicator';\n    loadingIndicator.innerHTML = '<div class=\"spinner-border text-primary\" role=\"status\"><span class=\"visually-hidden\">Loading...</span></div>';\n    document.body.appendChild(loadingIndicator);\n    \n    // Fetch itinerary data\n    const response = await fetch(`/api/itineraries/${id}`);\n    const itinerary = await response.json();\n    \n    if (!response.ok) {\n      throw new Error(itinerary.error || 'Failed to retrieve itinerary');\n    }\n    \n    // Load itinerary data into current view\n    document.getElementById('itineraryOutput').innerText = itinerary.humanReadable;\n    \n    // Store JSON data for later use\n    window.currentItineraryData = itinerary.jsonVersion;\n    \n    // Pre-fill save form with itinerary details\n    document.getElementById('location').value = itinerary.location;\n    document.getElementById('date').value = new Date(itinerary.date).toISOString().split('T')[0];\n    document.getElementById('name').value = itinerary.name || '';\n    \n    // Show success message\n    const alertElement = document.createElement('div');\n    alertElement.className = 'alert alert-success alert-dismissible fade show';\n    alertElement.innerHTML = `\n      Itinerary loaded successfully!\n      <button type=\"button\" class=\"btn-close\" data-bs-dismiss=\"alert\"></button>\n    `;\n    document.querySelector('.itinerary-container').prepend(alertElement);\n    \n    // Scroll to itinerary output\n    document.getElementById('itineraryOutput').scrollIntoView({ behavior: 'smooth' });\n    \n    // Remove alert after 5 seconds\n    setTimeout(() => {\n      alertElement.remove();\n    }, 5000);\n  } catch (error) {\n    console.error('Error retrieving itinerary:', error);\n    \n    // Show error message\n    const alertElement = document.createElement('div');\n    alertElement.className = 'alert alert-danger alert-dismissible fade show';\n    alertElement.innerHTML = `\n      Error: ${error.message}\n      <button type=\"button\" class=\"btn-close\" data-bs-dismiss=\"alert\"></button>\n    `;\n    document.querySelector('.itinerary-container').prepend(alertElement);\n  } finally {\n    // Remove loading indicator\n    document.getElementById('loadingIndicator')?.remove();\n  }\n}",
+        "testStrategy": "1. Manual testing of retrieval functionality\n2. Verify itinerary data is correctly loaded into the view\n3. Test error handling with invalid or non-existent IDs\n4. Verify loading indicators work correctly\n5. Test with various itinerary data sizes\n6. Verify response time is under 2 seconds",
+        "priority": "high",
+        "dependencies": [
+          4,
+          7
+        ],
+        "status": "pending",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Create Loading Indicator Component",
+            "description": "Implement a reusable loading indicator component that can be shown during API calls to retrieve itineraries",
+            "dependencies": [],
+            "details": "Create a function that generates and manages a loading indicator element. The function should:\n1. Create a div element with appropriate styling\n2. Add a spinner with Bootstrap classes\n3. Append it to the document body\n4. Return a reference to the element for later removal\n5. Include a method to remove the indicator when operations complete",
+            "status": "pending",
+            "testStrategy": "Test the loading indicator appears and disappears correctly in different browser environments. Verify it's properly centered and visible on various screen sizes."
+          },
+          {
+            "id": 2,
+            "title": "Implement Fetch Itinerary API Call",
+            "description": "Create a function to fetch itinerary data from the server by ID",
+            "dependencies": [
+              "8.1"
+            ],
+            "details": "Implement an async function that:\n1. Takes an itinerary ID as parameter\n2. Shows the loading indicator before making the API call\n3. Makes a fetch request to `/api/itineraries/${id}`\n4. Handles response parsing and error checking\n5. Removes the loading indicator when complete\n6. Returns the itinerary data or throws an appropriate error",
+            "status": "pending",
+            "testStrategy": "Test with valid and invalid IDs. Mock API responses to test success and error handling. Verify proper error messages are generated for different failure scenarios."
+          },
+          {
+            "id": 3,
+            "title": "Implement Itinerary Data Population",
+            "description": "Create functionality to populate the UI with retrieved itinerary data",
+            "dependencies": [
+              "8.2"
+            ],
+            "details": "Implement a function that:\n1. Takes the retrieved itinerary data as input\n2. Updates the itinerary output area with the human-readable content\n3. Stores the JSON version in a global variable for later use\n4. Pre-fills the form fields (location, date, name) with the itinerary details\n5. Handles any data format conversions needed (e.g., date formatting)\n6. Implements scrolling to the populated content",
+            "status": "pending",
+            "testStrategy": "Test with various itinerary data structures. Verify all form fields are correctly populated. Test with edge cases like missing optional fields."
+          },
+          {
+            "id": 4,
+            "title": "Implement Notification System",
+            "description": "Create a system for displaying success and error messages to the user",
+            "dependencies": [],
+            "details": "Implement functions to:\n1. Create and display alert elements with appropriate styling (success/error)\n2. Support dismissible alerts with close buttons\n3. Position alerts at the top of the itinerary container\n4. Automatically remove alerts after a configurable timeout\n5. Handle multiple concurrent alerts if needed\n6. Ensure alerts are accessible and clearly visible",
+            "status": "pending",
+            "testStrategy": "Test different message types and lengths. Verify auto-dismissal works correctly. Test multiple alerts appearing in sequence. Verify accessibility compliance."
+          },
+          {
+            "id": 5,
+            "title": "Integrate Complete Retrieve Itinerary Function",
+            "description": "Combine all components into a complete retrieveItinerary function",
+            "dependencies": [
+              "8.1",
+              "8.2",
+              "8.3",
+              "8.4"
+            ],
+            "details": "Create the main retrieveItinerary function that:\n1. Takes an itinerary ID as parameter\n2. Uses the loading indicator component to show loading state\n3. Calls the fetch function to retrieve data\n4. Uses the data population function to update the UI\n5. Shows appropriate success/error notifications\n6. Implements proper error handling with try/catch\n7. Ensures the loading indicator is always removed in the finally block\n8. Adds event listeners to connect this function to UI elements",
+            "status": "pending",
+            "testStrategy": "Perform end-to-end testing of the complete flow. Test the full user journey from clicking to retrieve an itinerary through to seeing the populated data. Verify all error scenarios are handled gracefully."
+          }
+        ]
+      },
+      {
+        "id": 9,
+        "title": "Implement Delete Itinerary UI Functionality",
+        "description": "Create UI functionality to delete a selected itinerary with confirmation dialog",
+        "details": "Implement JavaScript functionality to:\n1. Show a confirmation dialog before deletion\n2. Delete the selected itinerary if confirmed\n3. Update the itinerary list after deletion\n4. Display success/error messages\n\nExample JavaScript:\n```javascript\nfunction confirmDeleteItinerary(id) {\n  // Create modal for confirmation\n  const modal = document.createElement('div');\n  modal.className = 'modal fade';\n  modal.id = 'deleteConfirmModal';\n  modal.setAttribute('tabindex', '-1');\n  modal.innerHTML = `\n    <div class=\"modal-dialog\">\n      <div class=\"modal-content\">\n        <div class=\"modal-header\">\n          <h5 class=\"modal-title\">Confirm Deletion</h5>\n          <button type=\"button\" class=\"btn-close\" data-bs-dismiss=\"modal\"></button>\n        </div>\n        <div class=\"modal-body\">\n          <p>Are you sure you want to delete this itinerary? This action cannot be undone.</p>\n        </div>\n        <div class=\"modal-footer\">\n          <button type=\"button\" class=\"btn btn-secondary\" data-bs-dismiss=\"modal\">Cancel</button>\n          <button type=\"button\" class=\"btn btn-danger\" id=\"confirmDeleteBtn\">Delete</button>\n        </div>\n      </div>\n    </div>\n  `;\n  \n  document.body.appendChild(modal);\n  \n  // Initialize Bootstrap modal\n  const modalInstance = new bootstrap.Modal(modal);\n  modalInstance.show();\n  \n  // Handle delete confirmation\n  document.getElementById('confirmDeleteBtn').addEventListener('click', async () => {\n    try {\n      modalInstance.hide();\n      \n      // Show loading indicator\n      const loadingIndicator = document.createElement('div');\n      loadingIndicator.id = 'deleteLoadingIndicator';\n      loadingIndicator.innerHTML = '<div class=\"spinner-border text-primary\" role=\"status\"><span class=\"visually-hidden\">Deleting...</span></div>';\n      document.body.appendChild(loadingIndicator);\n      \n      // Delete itinerary\n      const response = await fetch(`/api/itineraries/${id}`, {\n        method: 'DELETE'\n      });\n      \n      const result = await response.json();\n      \n      if (!response.ok) {\n        throw new Error(result.error || 'Failed to delete itinerary');\n      }\n      \n      // Show success message\n      const alertElement = document.createElement('div');\n      alertElement.className = 'alert alert-success alert-dismissible fade show';\n      alertElement.innerHTML = `\n        Itinerary deleted successfully!\n        <button type=\"button\" class=\"btn-close\" data-bs-dismiss=\"alert\"></button>\n      `;\n      document.querySelector('.itinerary-history').prepend(alertElement);\n      \n      // Reload itineraries list\n      loadItineraries();\n      \n      // Remove alert after 5 seconds\n      setTimeout(() => {\n        alertElement.remove();\n      }, 5000);\n    } catch (error) {\n      console.error('Error deleting itinerary:', error);\n      \n      // Show error message\n      const alertElement = document.createElement('div');\n      alertElement.className = 'alert alert-danger alert-dismissible fade show';\n      alertElement.innerHTML = `\n        Error: ${error.message}\n        <button type=\"button\" class=\"btn-close\" data-bs-dismiss=\"alert\"></button>\n      `;\n      document.querySelector('.itinerary-history').prepend(alertElement);\n    } finally {\n      // Remove loading indicator\n      document.getElementById('deleteLoadingIndicator')?.remove();\n      \n      // Remove modal from DOM after hiding\n      modal.addEventListener('hidden.bs.modal', () => {\n        modal.remove();\n      });\n    }\n  });\n  \n  // Remove modal from DOM when closed\n  modal.addEventListener('hidden.bs.modal', () => {\n    modal.remove();\n  });\n}",
+        "testStrategy": "1. Manual testing of delete confirmation dialog\n2. Verify cancellation works correctly\n3. Test successful deletion updates the list\n4. Test error handling with invalid or non-existent IDs\n5. Verify loading indicators work correctly\n6. Test with various user roles to ensure only Travel Coordinators can delete",
+        "priority": "medium",
+        "dependencies": [
+          5,
+          7
+        ],
+        "status": "pending",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Create Confirmation Modal Component",
+            "description": "Implement a reusable confirmation modal component that will be shown before deleting an itinerary. The modal should include a title, warning message, cancel button, and delete button.",
+            "dependencies": [],
+            "details": "Create a function that generates a Bootstrap modal for confirmation. The modal should be dynamically created and appended to the DOM when needed. Include proper event listeners for both cancel and confirm actions. Ensure the modal is properly removed from the DOM after it's closed to prevent memory leaks.",
+            "status": "pending",
+            "testStrategy": "Test modal appearance and layout. Verify both cancel and confirm buttons are clickable. Check that the modal is properly removed from DOM after closing."
+          },
+          {
+            "id": 2,
+            "title": "Implement Delete API Call Function",
+            "description": "Create a function that makes an API call to delete an itinerary by its ID and handles the response appropriately.",
+            "dependencies": [
+              "9.1"
+            ],
+            "details": "Implement an async function that sends a DELETE request to the '/api/itineraries/:id' endpoint. The function should include error handling for network issues and server errors. Use fetch API with appropriate headers and handle both successful and error responses from the server.",
+            "status": "pending",
+            "testStrategy": "Test with valid and invalid itinerary IDs. Verify proper error handling for network failures and server errors. Mock API responses to test different scenarios."
+          },
+          {
+            "id": 3,
+            "title": "Add Loading Indicator for Delete Operation",
+            "description": "Implement a loading indicator that displays while the delete operation is in progress to provide visual feedback to the user.",
+            "dependencies": [
+              "9.2"
+            ],
+            "details": "Create a function to show and hide a loading spinner during the delete operation. The spinner should be displayed immediately after confirmation and removed once the operation completes (whether successful or not). Use Bootstrap's spinner component for consistency with the rest of the UI.",
+            "status": "pending",
+            "testStrategy": "Verify loading indicator appears when delete is confirmed and disappears when operation completes. Test with both quick and delayed API responses."
+          },
+          {
+            "id": 4,
+            "title": "Implement Success and Error Notifications",
+            "description": "Create functions to display success and error messages after the delete operation completes to inform the user of the outcome.",
+            "dependencies": [
+              "9.2",
+              "9.3"
+            ],
+            "details": "Implement functions that create and display Bootstrap alert components for both success and error scenarios. Success alerts should be green and indicate the itinerary was deleted successfully. Error alerts should be red and display the specific error message. Both types of alerts should be dismissible and automatically disappear after 5 seconds.",
+            "status": "pending",
+            "testStrategy": "Test appearance of success and error notifications. Verify messages are clear and helpful. Check that alerts automatically disappear after the timeout period. Test with various error messages."
+          },
+          {
+            "id": 5,
+            "title": "Integrate Delete Functionality with Itinerary List",
+            "description": "Connect the delete functionality to the itinerary list UI by adding delete buttons and refreshing the list after successful deletion.",
+            "dependencies": [
+              "9.1",
+              "9.2",
+              "9.3",
+              "9.4"
+            ],
+            "details": "Add delete buttons or icons to each itinerary in the list. Attach event listeners to these buttons that call the confirmation modal function with the appropriate itinerary ID. After successful deletion, call the existing loadItineraries() function to refresh the list. Ensure proper UI updates occur regardless of success or failure.",
+            "status": "pending",
+            "testStrategy": "Test end-to-end delete flow from clicking delete button to list refresh. Verify itinerary disappears from list after successful deletion. Test cancellation flow to ensure itinerary remains in list when delete is cancelled."
+          }
+        ]
+      },
+      {
+        "id": 10,
+        "title": "Implement Authentication for Travel Coordinators",
+        "description": "Create authentication middleware to ensure only Travel Coordinators can access history features",
+        "details": "Implement authentication middleware that:\n1. Verifies user is logged in\n2. Checks if user has Travel Coordinator role\n3. Restricts access to history features for unauthorized users\n4. Applies to all history-related API endpoints\n\nExample implementation:\n```javascript\n// Authentication middleware\nfunction authenticateTravelCoordinator(req, res, next) {\n  // Check if user is authenticated\n  if (!req.session || !req.session.user) {\n    return res.status(401).json({ error: 'Authentication required' });\n  }\n  \n  // Check if user has Travel Coordinator role\n  if (!req.session.user.roles.includes('travel_coordinator')) {\n    return res.status(403).json({ error: 'Access denied. Travel Coordinator role required' });\n  }\n  \n  // User is authenticated and authorized\n  next();\n}\n\n// Apply middleware to all itinerary endpoints\napp.use('/api/itineraries', authenticateTravelCoordinator);\n\n// Or apply to specific endpoints\napp.post('/api/itineraries', authenticateTravelCoordinator, async (req, res) => {\n  // Handler code\n});\n\n// Client-side authentication check\nfunction checkTravelCoordinatorAccess() {\n  // Fetch current user info\n  fetch('/api/user/current')\n    .then(response => response.json())\n    .then(user => {\n      const isTravelCoordinator = user.roles.includes('travel_coordinator');\n      \n      // Show/hide history features based on role\n      const historyElements = document.querySelectorAll('.history-feature');\n      historyElements.forEach(el => {\n        el.style.display = isTravelCoordinator ? 'block' : 'none';\n      });\n      \n      // Show message if not authorized\n      if (!isTravelCoordinator) {\n        const alertElement = document.createElement('div');\n        alertElement.className = 'alert alert-warning';\n        alertElement.textContent = 'History features are only available to Travel Coordinators.';\n        document.querySelector('.itinerary-container').prepend(alertElement);\n      }\n    })\n    .catch(error => console.error('Error checking user role:', error));\n}",
+        "testStrategy": "1. Unit test middleware with various user roles\n2. Integration test API endpoints with authenticated and unauthenticated requests\n3. Test with valid Travel Coordinator credentials\n4. Test with non-Travel Coordinator credentials\n5. Verify UI elements are correctly shown/hidden based on role\n6. Test session expiration handling",
+        "priority": "high",
+        "dependencies": [
+          2,
+          3,
+          5
+        ],
+        "status": "pending",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Create User Authentication Verification Middleware",
+            "description": "Implement middleware function to verify if a user is logged in by checking session data",
+            "dependencies": [],
+            "details": "Create a middleware function that checks if the user has an active session and is logged in. If not, return a 401 Unauthorized response. The function should:\n1. Check if req.session exists\n2. Check if req.session.user exists\n3. If either check fails, return a 401 response with appropriate error message\n4. Otherwise, call next() to proceed to the next middleware",
+            "status": "pending",
+            "testStrategy": "1. Unit test with mock request objects containing valid session data\n2. Unit test with mock request objects containing invalid/missing session data\n3. Verify 401 status code is returned for unauthenticated requests\n4. Verify next() is called for authenticated requests"
+          },
+          {
+            "id": 2,
+            "title": "Implement Role Verification for Travel Coordinators",
+            "description": "Create middleware function to check if the authenticated user has the Travel Coordinator role",
+            "dependencies": [
+              "10.1"
+            ],
+            "details": "Extend the authentication middleware to verify the user's role:\n1. Assume the user is already authenticated (from previous middleware)\n2. Check if req.session.user.roles includes 'travel_coordinator'\n3. If the role check fails, return a 403 Forbidden response with appropriate error message\n4. If the user has the required role, call next() to proceed",
+            "status": "pending",
+            "testStrategy": "1. Unit test with mock request objects containing users with Travel Coordinator role\n2. Unit test with mock request objects containing users without Travel Coordinator role\n3. Verify 403 status code is returned for unauthorized users\n4. Verify next() is called for authorized users"
+          },
+          {
+            "id": 3,
+            "title": "Create Combined Authentication Middleware",
+            "description": "Combine user authentication and role verification into a single middleware function for Travel Coordinators",
+            "dependencies": [
+              "10.1",
+              "10.2"
+            ],
+            "details": "Create a combined middleware function that:\n1. First checks if the user is authenticated\n2. Then checks if the user has the Travel Coordinator role\n3. Returns appropriate error responses for authentication or authorization failures\n4. Calls next() only if both checks pass\n\nExample implementation:\n```javascript\nfunction authenticateTravelCoordinator(req, res, next) {\n  // Check if user is authenticated\n  if (!req.session || !req.session.user) {\n    return res.status(401).json({ error: 'Authentication required' });\n  }\n  \n  // Check if user has Travel Coordinator role\n  if (!req.session.user.roles.includes('travel_coordinator')) {\n    return res.status(403).json({ error: 'Access denied. Travel Coordinator role required' });\n  }\n  \n  // User is authenticated and authorized\n  next();\n}\n```",
+            "status": "pending",
+            "testStrategy": "1. Integration test with various user scenarios (unauthenticated, authenticated without role, authenticated with role)\n2. Verify correct status codes and error messages are returned\n3. Test with valid session data but missing roles array"
+          },
+          {
+            "id": 4,
+            "title": "Apply Authentication Middleware to History API Endpoints",
+            "description": "Apply the Travel Coordinator authentication middleware to all history-related API endpoints",
+            "dependencies": [
+              "10.3"
+            ],
+            "details": "Apply the authentication middleware to all history-related API endpoints:\n1. Identify all history-related API routes (e.g., /api/itineraries, /api/itineraries/:id)\n2. Apply the authenticateTravelCoordinator middleware to these routes\n3. Ensure middleware is applied before route handlers\n\nImplementation options:\n- Apply to all routes under a specific path: `app.use('/api/itineraries', authenticateTravelCoordinator);`\n- Apply to individual routes: `app.get('/api/itineraries/:id', authenticateTravelCoordinator, routeHandler);`\n- Apply to specific HTTP methods as needed",
+            "status": "pending",
+            "testStrategy": "1. Integration test each protected endpoint with authenticated and unauthenticated requests\n2. Verify unauthenticated requests receive 401 responses\n3. Verify authenticated requests without proper role receive 403 responses\n4. Verify authenticated requests with proper role can access the endpoints"
+          },
+          {
+            "id": 5,
+            "title": "Implement Client-Side Authentication Check for UI Elements",
+            "description": "Create client-side JavaScript to show/hide history features based on user role",
+            "dependencies": [
+              "10.3"
+            ],
+            "details": "Implement client-side authentication check to control UI visibility:\n1. Create a function to fetch current user information from the server\n2. Check if the user has the Travel Coordinator role\n3. Show/hide history-related UI elements based on the role check\n4. Display appropriate messages for unauthorized users\n\nExample implementation:\n```javascript\nfunction checkTravelCoordinatorAccess() {\n  // Fetch current user info\n  fetch('/api/user/current')\n    .then(response => response.json())\n    .then(user => {\n      const isTravelCoordinator = user.roles.includes('travel_coordinator');\n      \n      // Show/hide history features based on role\n      const historyElements = document.querySelectorAll('.history-feature');\n      historyElements.forEach(el => {\n        el.style.display = isTravelCoordinator ? 'block' : 'none';\n      });\n      \n      // Show message if not authorized\n      if (!isTravelCoordinator) {\n        const alertElement = document.createElement('div');\n        alertElement.className = 'alert alert-warning';\n        alertElement.textContent = 'History features are only available to Travel Coordinators.';\n        document.querySelector('.itinerary-container').prepend(alertElement);\n      }\n    })\n    .catch(error => console.error('Error checking user role:', error));\n}\n```",
+            "status": "pending",
+            "testStrategy": "1. Manual testing with different user roles\n2. Verify history UI elements are correctly shown/hidden based on role\n3. Test with network errors to ensure error handling works\n4. Verify appropriate messages are displayed for unauthorized users"
+          }
+        ]
+      }
+    ],
+    "metadata": {
+      "created": "2025-09-15T13:22:09.909Z",
+      "updated": "2025-09-15T13:22:09.909Z",
+      "description": "All tasks related to travel itinerary features and history."
+    }
+  },
+  "history": {
+    "tasks": [
+      {
+        "id": 1,
+        "title": "Design MongoDB Schema for Itinerary History",
+        "description": "Create a MongoDB schema for storing travel itinerary versions with appropriate fields and validation rules",
+        "details": "Design a Mongoose schema with the following fields:\n- location (String, required)\n- date (Date, required)\n- name (String, optional)\n- humanReadable (String, required) - formatted itinerary text\n- jsonVersion (Object, required) - structured itinerary data\n- createdAt (Date, auto-generated)\n\nImplement validation to ensure:\n- Unique compound index on location+date+name\n- Required fields validation\n- Appropriate data types\n\nConnect to MongoDB Atlas cluster 'carriage-house-db-00' and create appropriate collections.\n\nExample schema:\n```javascript\nconst mongoose = require('mongoose');\n\nconst itinerarySchema = new mongoose.Schema({\n  location: { type: String, required: true },\n  date: { type: Date, required: true },\n  name: { type: String, default: '' },\n  humanReadable: { type: String, required: true },\n  jsonVersion: { type: Object, required: true },\n  createdAt: { type: Date, default: Date.now }\n});\n\n// Create compound index for uniqueness\nitinerarySchema.index({ location: 1, date: 1, name: 1 }, { unique: true });\n\nconst Itinerary = mongoose.model('Itinerary', itinerarySchema);\n```",
+        "testStrategy": "1. Unit test schema validation with valid and invalid data\n2. Test uniqueness constraint with duplicate entries\n3. Verify required fields trigger appropriate validation errors\n4. Test connection to MongoDB Atlas cluster\n5. Verify indexes are created correctly",
+        "priority": "high",
+        "dependencies": [],
+        "status": "in-progress",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Define Basic Mongoose Schema Structure",
+            "description": "Create the core Mongoose schema with all required fields and their types for the itinerary history collection.",
+            "dependencies": [],
+            "details": "const mongoose = require('mongoose');\n\nconst itinerarySchema = new mongoose.Schema({\n  location: { type: String, required: true },\n  date: { type: Date, required: true },\n  name: { type: String, default: '' },\n  humanReadable: { type: String, required: true },\n  jsonVersion: { type: Object, required: true },\n  createdAt: { type: Date, default: Date.now }\n});\n\nmodule.exports = itinerarySchema;",
+            "status": "pending",
+            "testStrategy": "Verify schema structure by creating a test instance and checking that all fields are properly defined with correct types and required flags."
+          },
+          {
+            "id": 2,
+            "title": "Add Schema Validation and Indexing",
+            "description": "Implement validation rules and create a unique compound index on location+date+name to ensure data integrity.",
+            "dependencies": [],
+            "details": "// Add to the schema file after defining the schema\n\n// Add custom validation for jsonVersion to ensure it's a valid object\nitinerarySchema.path('jsonVersion').validate(function(value) {\n  return value && typeof value === 'object' && !Array.isArray(value);\n}, 'jsonVersion must be a valid object');\n\n// Create compound index for uniqueness\nitinerarySchema.index({ location: 1, date: 1, name: 1 }, { unique: true });\n\n// Add pre-save middleware to format date if needed\nitinerarySchema.pre('save', function(next) {\n  if (!(this.date instanceof Date)) {\n    this.date = new Date(this.date);\n  }\n  next();\n});",
+            "status": "pending",
+            "testStrategy": "Test schema validation by attempting to save documents with missing required fields, invalid data types, and duplicate entries to verify appropriate validation errors are thrown."
+          },
+          {
+            "id": 3,
+            "title": "Create Mongoose Model and Connection Setup",
+            "description": "Create the Mongoose model from the schema and implement the MongoDB Atlas connection configuration.",
+            "dependencies": [],
+            "details": "// In models/itinerary.js\nconst mongoose = require('mongoose');\nconst itinerarySchema = require('./itinerarySchema');\n\nconst Itinerary = mongoose.model('Itinerary', itinerarySchema);\n\nmodule.exports = Itinerary;\n\n// In config/database.js\nconst mongoose = require('mongoose');\n\nconst connectDB = async () => {\n  try {\n    const conn = await mongoose.connect(process.env.MONGODB_URI || 'mongodb+srv://username:password@carriage-house-db-00.mongodb.net/itineraries?retryWrites=true&w=majority', {\n      useNewUrlParser: true,\n      useUnifiedTopology: true,\n    });\n    console.log(`MongoDB Connected: ${conn.connection.host}`);\n    return conn;\n  } catch (error) {\n    console.error(`Error connecting to MongoDB: ${error.message}`);\n    process.exit(1);\n  }\n};\n\nmodule.exports = connectDB;",
+            "status": "pending",
+            "testStrategy": "Test database connection by creating a test script that connects to the MongoDB Atlas cluster and verifies successful connection. Use a test database for this purpose."
+          },
+          {
+            "id": 4,
+            "title": "Implement CRUD Operations for Itinerary Model",
+            "description": "Create utility functions to perform Create, Read, Update, and Delete operations on the itinerary collection.",
+            "dependencies": [],
+            "details": "// In services/itineraryService.js\nconst Itinerary = require('../models/itinerary');\n\nconst itineraryService = {\n  // Create a new itinerary\n  async createItinerary(itineraryData) {\n    try {\n      const itinerary = new Itinerary(itineraryData);\n      return await itinerary.save();\n    } catch (error) {\n      if (error.code === 11000) {\n        throw new Error('An itinerary with this location, date, and name already exists');\n      }\n      throw error;\n    }\n  },\n\n  // Get itineraries with optional filtering\n  async getItineraries(filters = {}, page = 1, limit = 20) {\n    const skip = (page - 1) * limit;\n    const query = {};\n    \n    if (filters.location) query.location = filters.location;\n    if (filters.date) query.date = new Date(filters.date);\n    if (filters.name) query.name = filters.name;\n    \n    const total = await Itinerary.countDocuments(query);\n    const itineraries = await Itinerary.find(query)\n      .sort({ date: -1, createdAt: -1 })\n      .skip(skip)\n      .limit(limit);\n      \n    return {\n      itineraries,\n      totalPages: Math.ceil(total / limit),\n      currentPage: page\n    };\n  },\n\n  // Get a single itinerary by ID\n  async getItineraryById(id) {\n    return await Itinerary.findById(id);\n  },\n\n  // Update an itinerary\n  async updateItinerary(id, updateData) {\n    return await Itinerary.findByIdAndUpdate(id, updateData, { new: true, runValidators: true });\n  },\n\n  // Delete an itinerary\n  async deleteItinerary(id) {\n    return await Itinerary.findByIdAndDelete(id);\n  }\n};\n\nmodule.exports = itineraryService;",
+            "status": "pending",
+            "testStrategy": "Create unit tests for each CRUD operation using a test database. Test creating, retrieving, updating, and deleting itineraries with various inputs including edge cases."
+          },
+          {
+            "id": 5,
+            "title": "Create Schema Documentation and Usage Examples",
+            "description": "Document the schema design, validation rules, and provide usage examples for the development team.",
+            "dependencies": [],
+            "details": "# Itinerary Schema Documentation\n\n## Schema Structure\n\n```javascript\nconst itinerarySchema = new mongoose.Schema({\n  location: { type: String, required: true },\n  date: { type: Date, required: true },\n  name: { type: String, default: '' },\n  humanReadable: { type: String, required: true },\n  jsonVersion: { type: Object, required: true },\n  createdAt: { type: Date, default: Date.now }\n});\n```\n\n## Field Descriptions\n\n- `location` (String, required): The destination or location of the itinerary\n- `date` (Date, required): The date of the itinerary\n- `name` (String, optional): A custom name for the itinerary, defaults to empty string\n- `humanReadable` (String, required): Formatted text version of the itinerary\n- `jsonVersion` (Object, required): Structured data representation of the itinerary\n- `createdAt` (Date, auto-generated): Timestamp when the itinerary was created\n\n## Validation Rules\n\n- Unique compound index on `location`, `date`, and `name` to prevent duplicates\n- Required fields validation for `location`, `date`, `humanReadable`, and `jsonVersion`\n- Type validation for all fields\n\n## Usage Examples\n\n### Creating a new itinerary\n\n```javascript\nconst itineraryService = require('./services/itineraryService');\n\nconst newItinerary = {\n  location: 'Paris, France',\n  date: new Date('2023-06-15'),\n  name: 'Summer Vacation',\n  humanReadable: 'Day 1: Eiffel Tower\\nDay 2: Louvre Museum',\n  jsonVersion: {\n    days: [\n      { day: 1, activities: ['Eiffel Tower'] },\n      { day: 2, activities: ['Louvre Museum'] }\n    ]\n  }\n};\n\ntry {\n  const savedItinerary = await itineraryService.createItinerary(newItinerary);\n  console.log('Itinerary saved:', savedItinerary);\n} catch (error) {\n  console.error('Error saving itinerary:', error.message);\n}\n```\n\n### Retrieving itineraries with filters\n\n```javascript\n// Get all itineraries for Paris in June 2023\nconst filters = {\n  location: 'Paris, France',\n  date: new Date('2023-06-01') // Will match based on date part only if using appropriate query\n};\n\nconst { itineraries, totalPages, currentPage } = await itineraryService.getItineraries(filters, 1, 10);\n```",
+            "status": "pending",
+            "testStrategy": "Review documentation with team members to ensure clarity and completeness. Verify that usage examples work as expected by implementing them in a test environment."
+          }
+        ]
+      },
+      {
+        "id": 2,
+        "title": "Implement Save Itinerary API Endpoint",
+        "description": "Create a REST API endpoint to save new itinerary versions with validation for required fields and uniqueness",
+        "details": "Implement a POST endpoint at '/api/itineraries' that:\n1. Accepts JSON payload with location, date, name, humanReadable, and jsonVersion\n2. Validates required fields and data types\n3. Checks for duplicates based on location+date+name\n4. Saves valid itineraries to MongoDB\n5. Returns appropriate success/error responses\n\nExample implementation:\n```javascript\napp.post('/api/itineraries', async (req, res) => {\n  try {\n    const { location, date, name, humanReadable, jsonVersion } = req.body;\n    \n    // Validate required fields\n    if (!location || !date || !humanReadable || !jsonVersion) {\n      return res.status(400).json({ error: 'Missing required fields' });\n    }\n    \n    // Create new itinerary\n    const itinerary = new Itinerary({\n      location,\n      date,\n      name: name || '',\n      humanReadable,\n      jsonVersion\n    });\n    \n    // Save to database\n    await itinerary.save();\n    \n    return res.status(201).json({ \n      message: 'Itinerary saved successfully', \n      id: itinerary._id \n    });\n  } catch (error) {\n    // Handle duplicate key error\n    if (error.code === 11000) {\n      return res.status(409).json({ \n        error: 'An itinerary with this location, date, and name already exists' \n      });\n    }\n    return res.status(500).json({ error: error.message });\n  }\n});",
+        "testStrategy": "1. Integration test with valid payload to verify successful save\n2. Test with missing required fields to verify 400 response\n3. Test with duplicate entries to verify 409 response\n4. Verify saved data in MongoDB matches input\n5. Load test with multiple concurrent requests\n6. Verify response time is under 2 seconds",
+        "priority": "high",
+        "dependencies": [
+          1
+        ],
+        "status": "pending",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Define Itinerary Schema and Model",
+            "description": "Create a MongoDB schema and model for the itinerary data structure with proper validation rules and indexes for uniqueness constraints.",
+            "dependencies": [],
+            "details": "Create a new file models/Itinerary.js that defines the Mongoose schema with fields for location, date, name, humanReadable, and jsonVersion. Add validation for required fields and set up a compound index for location+date+name to enforce uniqueness. Export the model for use in the API endpoint.",
+            "status": "pending",
+            "testStrategy": "Unit test the schema validation by creating valid and invalid itinerary objects and checking that validation works as expected."
+          },
+          {
+            "id": 2,
+            "title": "Implement Request Validation Middleware",
+            "description": "Create middleware to validate incoming request data before processing the save operation.",
+            "dependencies": [
+              "2.1"
+            ],
+            "details": "Create a validation middleware function that checks for required fields (location, date, humanReadable, jsonVersion), validates data types (e.g., date format, JSON structure), and returns appropriate error responses for invalid requests. This middleware will be applied to the POST endpoint.",
+            "status": "pending",
+            "testStrategy": "Unit test the validation middleware with various input scenarios including missing fields, invalid data types, and valid data."
+          },
+          {
+            "id": 3,
+            "title": "Implement Duplicate Check Logic",
+            "description": "Create a function to check for existing itineraries with the same location, date, and name combination.",
+            "dependencies": [
+              "2.1"
+            ],
+            "details": "Implement a function that queries the database for existing itineraries matching the location+date+name combination. This can either be handled through the unique index (catching the duplicate key error) or by performing an explicit check before attempting to save.",
+            "status": "pending",
+            "testStrategy": "Test the duplicate detection by attempting to save itineraries with the same key fields and verifying that duplicates are properly identified."
+          },
+          {
+            "id": 4,
+            "title": "Create POST Endpoint Handler",
+            "description": "Implement the core API endpoint handler function that processes validated requests and saves itineraries to MongoDB.",
+            "dependencies": [
+              "2.1",
+              "2.2",
+              "2.3"
+            ],
+            "details": "Create the main route handler for POST /api/itineraries that uses the validation middleware, creates a new Itinerary document from the request body, saves it to MongoDB, and returns the appropriate success response with the new itinerary ID.",
+            "status": "pending",
+            "testStrategy": "Integration test the endpoint with valid payloads to verify successful saves, and check that the saved data in MongoDB matches the input."
+          },
+          {
+            "id": 5,
+            "title": "Implement Error Handling and Response Formatting",
+            "description": "Add comprehensive error handling to the endpoint and standardize response formats for success and error cases.",
+            "dependencies": [
+              "2.4"
+            ],
+            "details": "Enhance the endpoint with try/catch blocks to handle various error scenarios including validation errors, duplicate key errors (code 11000), database connection issues, and unexpected errors. Format responses consistently with appropriate HTTP status codes (201 for success, 400 for validation errors, 409 for conflicts, 500 for server errors) and include helpful error messages.",
+            "status": "pending",
+            "testStrategy": "Test error handling by triggering various error conditions and verifying that the appropriate status codes and error messages are returned. Test with missing required fields, duplicate entries, and simulated server errors."
+          }
+        ]
+      },
+      {
+        "id": 3,
+        "title": "Implement Retrieve Itineraries API Endpoint",
+        "description": "Create a REST API endpoint to retrieve and filter itinerary versions by location, date, and name",
+        "details": "Implement a GET endpoint at '/api/itineraries' that:\n1. Accepts query parameters for location, date, and name\n2. Returns a list of matching itineraries\n3. Supports pagination for large result sets\n4. Sorts results by date (descending) by default\n\nExample implementation:\n```javascript\napp.get('/api/itineraries', async (req, res) => {\n  try {\n    const { location, date, name, page = 1, limit = 20 } = req.query;\n    const query = {};\n    \n    // Build query based on provided filters\n    if (location) query.location = { $regex: location, $options: 'i' };\n    if (date) query.date = new Date(date);\n    if (name) query.name = { $regex: name, $options: 'i' };\n    \n    // Execute query with pagination\n    const skip = (page - 1) * limit;\n    const itineraries = await Itinerary\n      .find(query)\n      .sort({ date: -1 })\n      .skip(skip)\n      .limit(parseInt(limit))\n      .select('-jsonVersion'); // Exclude large JSON data in list view\n    \n    // Get total count for pagination\n    const total = await Itinerary.countDocuments(query);\n    \n    return res.status(200).json({\n      itineraries,\n      pagination: {\n        total,\n        page: parseInt(page),\n        pages: Math.ceil(total / limit)\n      }\n    });\n  } catch (error) {\n    return res.status(500).json({ error: error.message });\n  }\n});",
+        "testStrategy": "1. Integration test with various filter combinations\n2. Verify pagination works correctly\n3. Test with non-existent filters returns empty array\n4. Verify sorting order is correct\n5. Test performance with large datasets\n6. Verify response time is under 2 seconds",
+        "priority": "high",
+        "dependencies": [
+          1
+        ],
+        "status": "pending",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Define query parameter validation and parsing",
+            "description": "Implement validation and parsing logic for the query parameters (location, date, name, page, limit) to ensure they are properly formatted before using them in database queries.",
+            "dependencies": [],
+            "details": "Create utility functions to validate and parse query parameters:\n1. Validate that 'page' and 'limit' are positive integers\n2. Parse 'date' parameter into a valid Date object if provided\n3. Sanitize text inputs (location, name) to prevent injection attacks\n4. Set default values for pagination (page=1, limit=20)\n5. Return appropriate error messages for invalid parameters",
+            "status": "pending",
+            "testStrategy": "Unit test each validation function with valid and invalid inputs. Test edge cases like negative page numbers, non-numeric limits, and malformed date strings."
+          },
+          {
+            "id": 2,
+            "title": "Implement database query construction",
+            "description": "Build the MongoDB query object based on the provided filter parameters, ensuring proper regex usage for text fields and date handling.",
+            "dependencies": [
+              "3.1"
+            ],
+            "details": "Create a function that builds a MongoDB query object:\n1. Add case-insensitive regex search for location and name parameters if provided\n2. Handle date parameter with proper date object conversion\n3. Implement proper error handling for malformed query parameters\n4. Return a complete query object that can be passed to Mongoose's find() method",
+            "status": "pending",
+            "testStrategy": "Unit test the query builder with various combinations of parameters. Verify the generated query matches expected MongoDB syntax."
+          },
+          {
+            "id": 3,
+            "title": "Implement pagination and sorting logic",
+            "description": "Create the logic for paginating results and sorting them by date in descending order, calculating proper skip and limit values.",
+            "dependencies": [
+              "3.2"
+            ],
+            "details": "Implement pagination and sorting functionality:\n1. Calculate 'skip' value based on page number and limit\n2. Apply sort by date in descending order as default\n3. Select fields to return (exclude large fields like jsonVersion)\n4. Calculate total pages based on query results count\n5. Structure pagination metadata (total, current page, total pages)",
+            "status": "pending",
+            "testStrategy": "Test pagination with various page sizes and page numbers. Verify correct items are returned for each page. Test sorting order is correctly applied."
+          },
+          {
+            "id": 4,
+            "title": "Create the GET endpoint handler",
+            "description": "Implement the actual Express route handler for GET /api/itineraries that uses the query, pagination, and sorting logic.",
+            "dependencies": [
+              "3.1",
+              "3.2",
+              "3.3"
+            ],
+            "details": "Create the Express route handler:\n1. Extract query parameters from req.query\n2. Use the validation and query building functions\n3. Execute the database query with pagination and sorting\n4. Get total count for pagination metadata\n5. Structure the response with itineraries array and pagination object\n6. Implement proper error handling and status codes",
+            "status": "pending",
+            "testStrategy": "Integration test the endpoint with various query parameters. Test error handling by triggering database errors. Verify response structure matches expected format."
+          },
+          {
+            "id": 5,
+            "title": "Implement performance optimization and testing",
+            "description": "Optimize the endpoint for performance with large datasets and implement comprehensive testing to ensure reliability.",
+            "dependencies": [
+              "3.4"
+            ],
+            "details": "Add performance optimizations and testing:\n1. Add database indexes for frequently queried fields (location, date, name)\n2. Implement query timeout handling to prevent long-running queries\n3. Add response caching for common queries\n4. Create load testing scripts to verify performance under load\n5. Document the API endpoint with examples and parameter descriptions\n6. Implement monitoring for query performance",
+            "status": "pending",
+            "testStrategy": "Load test with large datasets (1000+ records). Measure response times with various filter combinations. Verify response time stays under 2 seconds. Test cache hit/miss scenarios."
+          }
+        ]
+      },
+      {
+        "id": 4,
+        "title": "Implement Retrieve Single Itinerary API Endpoint",
+        "description": "Create a REST API endpoint to retrieve a specific itinerary version by ID with complete details",
+        "details": "Implement a GET endpoint at '/api/itineraries/:id' that:\n1. Accepts an itinerary ID as a path parameter\n2. Returns the complete itinerary including human-readable and JSON versions\n3. Returns appropriate error if itinerary not found\n\nExample implementation:\n```javascript\napp.get('/api/itineraries/:id', async (req, res) => {\n  try {\n    const { id } = req.params;\n    \n    // Validate ID format\n    if (!mongoose.Types.ObjectId.isValid(id)) {\n      return res.status(400).json({ error: 'Invalid itinerary ID format' });\n    }\n    \n    // Find itinerary by ID\n    const itinerary = await Itinerary.findById(id);\n    \n    // Handle not found\n    if (!itinerary) {\n      return res.status(404).json({ error: 'Itinerary not found' });\n    }\n    \n    return res.status(200).json(itinerary);\n  } catch (error) {\n    return res.status(500).json({ error: error.message });\n  }\n});",
+        "testStrategy": "1. Integration test with valid ID to verify successful retrieval\n2. Test with invalid ID format to verify 400 response\n3. Test with non-existent ID to verify 404 response\n4. Verify all fields are returned correctly\n5. Verify response time is under 2 seconds",
+        "priority": "high",
+        "dependencies": [
+          1,
+          3
+        ],
+        "status": "pending",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Create route handler function for GET /api/itineraries/:id",
+            "description": "Implement the basic route handler function that accepts an itinerary ID parameter and sets up the try-catch error handling structure.",
+            "dependencies": [],
+            "details": "Create the route handler function for the GET endpoint that will retrieve a single itinerary. Set up the basic structure with parameter extraction and error handling. Include the route registration in the Express app. The function should extract the ID parameter and set up proper error handling with appropriate HTTP status codes.",
+            "status": "pending",
+            "testStrategy": "Test the route registration with a mock handler to ensure the endpoint is properly configured. Verify error handling by triggering exceptions and checking response status codes."
+          },
+          {
+            "id": 2,
+            "title": "Implement ID validation logic",
+            "description": "Add validation for the itinerary ID to ensure it's in the correct format before attempting database operations.",
+            "dependencies": [
+              "4.1"
+            ],
+            "details": "Use mongoose.Types.ObjectId.isValid() to validate that the provided ID is in the correct format for MongoDB. Return a 400 Bad Request response with an appropriate error message if the ID format is invalid. This prevents unnecessary database queries for malformed IDs and provides clear feedback to the client.",
+            "status": "pending",
+            "testStrategy": "Test with various invalid ID formats (too short, non-hexadecimal characters, etc.) to verify 400 responses. Test with valid ID format to ensure the validation passes correctly."
+          },
+          {
+            "id": 3,
+            "title": "Implement database query to retrieve itinerary by ID",
+            "description": "Create the database query to find and retrieve the complete itinerary document by its ID.",
+            "dependencies": [
+              "4.2"
+            ],
+            "details": "Use Mongoose's findById method to query the database for the itinerary with the specified ID. Ensure all necessary fields are included in the returned document. Consider using .lean() for better performance if no document modifications are needed. Handle the case where no document is found by returning a 404 Not Found response.",
+            "status": "pending",
+            "testStrategy": "Test with existing itinerary IDs to verify successful retrieval. Test with valid but non-existent IDs to verify 404 responses. Verify all expected fields are present in the returned document."
+          },
+          {
+            "id": 4,
+            "title": "Add response formatting for successful retrieval",
+            "description": "Format the response to include both human-readable and JSON versions of the itinerary data.",
+            "dependencies": [
+              "4.3"
+            ],
+            "details": "When an itinerary is successfully retrieved, format the response to include both the human-readable representation and the JSON version of the itinerary. Ensure the response structure is consistent with other API endpoints. Return a 200 OK status code with the formatted itinerary data.",
+            "status": "pending",
+            "testStrategy": "Verify the response includes both human-readable and JSON versions of the itinerary. Test with different itinerary data to ensure consistent formatting. Check response headers for correct content type."
+          },
+          {
+            "id": 5,
+            "title": "Implement comprehensive error handling and logging",
+            "description": "Enhance error handling to provide meaningful error messages and implement logging for debugging and monitoring.",
+            "dependencies": [
+              "4.4"
+            ],
+            "details": "Improve the error handling to provide specific error messages for different failure scenarios. Implement logging of errors for debugging and monitoring purposes. Handle edge cases such as database connection issues or timeout errors. Ensure all error responses follow a consistent format with appropriate HTTP status codes (400 for client errors, 404 for not found, 500 for server errors).",
+            "status": "pending",
+            "testStrategy": "Test error scenarios by mocking database failures. Verify appropriate status codes and error messages for different error types. Check that sensitive error details are not exposed to clients in production mode."
+          }
+        ]
+      },
+      {
+        "id": 5,
+        "title": "Implement Delete Itinerary API Endpoint",
+        "description": "Create a REST API endpoint to delete a specific itinerary version by ID",
+        "details": "Implement a DELETE endpoint at '/api/itineraries/:id' that:\n1. Accepts an itinerary ID as a path parameter\n2. Deletes the specified itinerary from the database\n3. Returns appropriate success/error responses\n4. Requires authentication as a Travel Coordinator\n\nExample implementation:\n```javascript\napp.delete('/api/itineraries/:id', authenticateTravelCoordinator, async (req, res) => {\n  try {\n    const { id } = req.params;\n    \n    // Validate ID format\n    if (!mongoose.Types.ObjectId.isValid(id)) {\n      return res.status(400).json({ error: 'Invalid itinerary ID format' });\n    }\n    \n    // Find and delete itinerary\n    const result = await Itinerary.findByIdAndDelete(id);\n    \n    // Handle not found\n    if (!result) {\n      return res.status(404).json({ error: 'Itinerary not found' });\n    }\n    \n    return res.status(200).json({ message: 'Itinerary deleted successfully' });\n  } catch (error) {\n    return res.status(500).json({ error: error.message });\n  }\n});\n\n// Authentication middleware (to be implemented)\nfunction authenticateTravelCoordinator(req, res, next) {\n  // Check if user is authenticated and has Travel Coordinator role\n  // If not, return 401 or 403\n  // If yes, call next()\n}",
+        "testStrategy": "1. Integration test with valid ID to verify successful deletion\n2. Test with invalid ID format to verify 400 response\n3. Test with non-existent ID to verify 404 response\n4. Verify deleted itinerary is no longer retrievable\n5. Test authentication requirements\n6. Verify response time is under 2 seconds",
+        "priority": "medium",
+        "dependencies": [
+          1,
+          4
+        ],
+        "status": "pending",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Implement authenticateTravelCoordinator middleware",
+            "description": "Create the authentication middleware that verifies if the user is logged in and has the Travel Coordinator role",
+            "dependencies": [],
+            "details": "Create a middleware function that checks the user's session for authentication status and role. The function should: 1) Verify if req.session and req.session.user exist, 2) Check if the user has the Travel Coordinator role, 3) Allow the request to proceed if authorized by calling next(), 4) Return 401 if not authenticated or 403 if authenticated but not authorized. Include error handling for edge cases.",
+            "status": "pending",
+            "testStrategy": "Unit test the middleware with various scenarios: authenticated Travel Coordinator, authenticated non-Travel Coordinator, unauthenticated user, and malformed session data. Mock the req, res, and next objects for testing."
+          },
+          {
+            "id": 2,
+            "title": "Implement ID validation function",
+            "description": "Create a utility function to validate the itinerary ID format",
+            "dependencies": [],
+            "details": "Create a reusable function that validates if the provided ID is in the correct MongoDB ObjectId format. The function should use mongoose.Types.ObjectId.isValid() to check the format and return a boolean indicating whether the ID is valid. This will be used in the DELETE endpoint to validate the ID before attempting to delete the itinerary.",
+            "status": "pending",
+            "testStrategy": "Unit test the validation function with various inputs: valid ObjectIds, invalid strings, null values, undefined values, and non-string values."
+          },
+          {
+            "id": 3,
+            "title": "Implement database deletion logic",
+            "description": "Create the function to delete an itinerary from the database by ID",
+            "dependencies": [
+              "5.2"
+            ],
+            "details": "Implement the core database operation to delete an itinerary by ID. Use Mongoose's findByIdAndDelete method to locate and remove the itinerary in a single operation. The function should handle the case where no document is found by returning null or a specific value that indicates the document wasn't found. Include proper error handling for database connection issues.",
+            "status": "pending",
+            "testStrategy": "Test the deletion function with valid IDs that exist in the database, valid IDs that don't exist, and with database connection failures (using mocks). Verify that the document is actually removed from the database after successful deletion."
+          },
+          {
+            "id": 4,
+            "title": "Implement DELETE endpoint handler",
+            "description": "Create the main route handler for the DELETE /api/itineraries/:id endpoint",
+            "dependencies": [
+              "5.1",
+              "5.2",
+              "5.3"
+            ],
+            "details": "Implement the Express route handler that ties together the authentication, validation, and deletion logic. The handler should: 1) Extract the ID from req.params, 2) Validate the ID format, 3) Attempt to delete the itinerary, 4) Handle the case where the itinerary is not found, 5) Return appropriate success/error responses with correct HTTP status codes. Use try/catch for error handling and ensure all error paths return appropriate responses.",
+            "status": "pending",
+            "testStrategy": "Integration test the endpoint with various scenarios: successful deletion, invalid ID format, non-existent ID, and server errors. Test both authenticated and unauthenticated requests to verify the authentication middleware is working correctly."
+          },
+          {
+            "id": 5,
+            "title": "Register the route in the Express application",
+            "description": "Add the DELETE endpoint to the Express application router",
+            "dependencies": [
+              "5.4"
+            ],
+            "details": "Register the DELETE endpoint in the Express application by adding the route to the appropriate router. Ensure the route is defined with the correct path ('/api/itineraries/:id') and includes the authenticateTravelCoordinator middleware. If using a modular approach with separate route files, make sure to export the router and import it in the main application file. Verify that the route is correctly mounted at the expected path.",
+            "status": "pending",
+            "testStrategy": "Test that the route is correctly registered by examining the Express application's route stack or by making a request to the endpoint and verifying it doesn't return a 404 Not Found error. Ensure the authentication middleware is correctly applied to the route."
+          }
+        ]
+      },
+      {
+        "id": 6,
+        "title": "Implement Save Itinerary UI Component",
+        "description": "Create a UI component for saving itineraries with location, date, and name inputs",
+        "details": "Update travel.html to include a save itinerary form with:\n1. Input fields for location (required), date (required), and name (optional)\n2. Validation for required fields\n3. Submit button to save the itinerary\n4. Success/error notifications\n5. Handling for duplicate entry warnings\n\nExample HTML/JS:\n```html\n<!-- Save Itinerary Form -->\n<div class=\"save-itinerary-form\">\n  <h3>Save Itinerary</h3>\n  <form id=\"saveItineraryForm\">\n    <div class=\"form-group\">\n      <label for=\"location\">Location*</label>\n      <input type=\"text\" id=\"location\" name=\"location\" required>\n    </div>\n    <div class=\"form-group\">\n      <label for=\"date\">Date*</label>\n      <input type=\"date\" id=\"date\" name=\"date\" required>\n    </div>\n    <div class=\"form-group\">\n      <label for=\"name\">Name (Optional)</label>\n      <input type=\"text\" id=\"name\" name=\"name\">\n    </div>\n    <button type=\"submit\" class=\"btn btn-primary\">Save Itinerary</button>\n  </form>\n  <div id=\"saveResult\" class=\"mt-3\"></div>\n</div>\n\n<script>\n  document.getElementById('saveItineraryForm').addEventListener('submit', async (e) => {\n    e.preventDefault();\n    const location = document.getElementById('location').value;\n    const date = document.getElementById('date').value;\n    const name = document.getElementById('name').value;\n    \n    // Get current itinerary data\n    const humanReadable = document.getElementById('itineraryOutput').innerText;\n    const jsonVersion = window.currentItineraryData; // Assuming this is set elsewhere\n    \n    try {\n      const response = await fetch('/api/itineraries', {\n        method: 'POST',\n        headers: { 'Content-Type': 'application/json' },\n        body: JSON.stringify({ location, date, name, humanReadable, jsonVersion })\n      });\n      \n      const data = await response.json();\n      \n      if (!response.ok) {\n        throw new Error(data.error || 'Failed to save itinerary');\n      }\n      \n      document.getElementById('saveResult').innerHTML = \n        `<div class=\"alert alert-success\">Itinerary saved successfully!</div>`;\n    } catch (error) {\n      document.getElementById('saveResult').innerHTML = \n        `<div class=\"alert alert-danger\">${error.message}</div>`;\n    }\n  });\n</script>\n```",
+        "testStrategy": "1. Manual testing of form submission with valid and invalid data\n2. Verify required field validation works\n3. Test error handling for duplicate entries\n4. Verify success messages appear correctly\n5. Test with various itinerary data sizes\n6. Verify form is responsive on different screen sizes",
+        "priority": "high",
+        "dependencies": [
+          2
+        ],
+        "status": "pending",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Create HTML structure for save itinerary form",
+            "description": "Add the HTML markup for the save itinerary form to travel.html, including all required input fields, labels, and the submit button.",
+            "dependencies": [],
+            "details": "Add the following HTML structure to travel.html in an appropriate location:\n- Create a container div with class 'save-itinerary-form'\n- Add a heading 'Save Itinerary'\n- Create a form with id 'saveItineraryForm'\n- Add form groups for location (required), date (required), and name (optional) inputs\n- Include appropriate labels and input attributes\n- Add a submit button with appropriate styling\n- Create a div with id 'saveResult' for displaying notifications",
+            "status": "pending",
+            "testStrategy": "Verify all form elements render correctly and have proper attributes (required, types, etc.). Check form layout on different screen sizes."
+          },
+          {
+            "id": 2,
+            "title": "Implement form validation for required fields",
+            "description": "Add client-side validation to ensure required fields (location and date) are filled before submission.",
+            "dependencies": [
+              "6.1"
+            ],
+            "details": "Implement validation logic that:\n- Uses HTML5 required attributes on mandatory fields\n- Adds JavaScript validation to check if location and date fields are filled\n- Prevents form submission if validation fails\n- Displays appropriate error messages next to invalid fields\n- Adds visual indicators (like red borders) for invalid fields\n- Ensures date field accepts only valid date formats",
+            "status": "pending",
+            "testStrategy": "Test form submission with empty required fields. Verify error messages appear correctly. Test with invalid date formats. Ensure form cannot be submitted until all required fields are valid."
+          },
+          {
+            "id": 3,
+            "title": "Implement form submission handler",
+            "description": "Create the JavaScript function to handle form submission, collect form data, and prepare it for API submission.",
+            "dependencies": [
+              "6.1",
+              "6.2"
+            ],
+            "details": "Create an event listener for the form submit event that:\n- Prevents default form submission\n- Collects values from all form fields\n- Retrieves current itinerary data (both human-readable and JSON versions)\n- Packages the data into the correct format for API submission\n- Includes error handling for missing itinerary data\n- Disables the submit button during submission to prevent duplicate submissions\n- Shows a loading indicator during submission",
+            "status": "pending",
+            "testStrategy": "Test form submission with various combinations of valid data. Verify the collected data matches user input. Check that the current itinerary data is correctly included in the submission."
+          },
+          {
+            "id": 4,
+            "title": "Implement API communication for saving itineraries",
+            "description": "Create the fetch request to send the itinerary data to the server API endpoint and handle the response.",
+            "dependencies": [
+              "6.3"
+            ],
+            "details": "Implement the fetch API call that:\n- Sends a POST request to '/api/itineraries'\n- Sets appropriate headers (Content-Type: application/json)\n- Converts the collected form data to JSON format\n- Implements proper error handling for network issues\n- Parses the JSON response from the server\n- Handles both successful and error responses from the API\n- Includes timeout handling for slow connections",
+            "status": "pending",
+            "testStrategy": "Test API communication with mock responses. Verify successful submissions are handled correctly. Test error handling with various error scenarios (network error, server error, validation error)."
+          },
+          {
+            "id": 5,
+            "title": "Implement success and error notifications",
+            "description": "Create UI components to display success messages, error notifications, and duplicate entry warnings to the user.",
+            "dependencies": [
+              "6.4"
+            ],
+            "details": "Implement notification handling that:\n- Displays a success message when an itinerary is saved successfully\n- Shows specific error messages for different error types\n- Handles duplicate entry warnings (HTTP 409) with a specific message\n- Formats notifications with appropriate styling (green for success, red for errors)\n- Makes notifications dismissible\n- Automatically clears notifications after a set time period\n- Ensures notifications are accessible and visible to the user",
+            "status": "pending",
+            "testStrategy": "Test all notification types (success, general error, validation error, duplicate warning). Verify notifications are clearly visible and properly styled. Test that notifications can be dismissed and auto-clear correctly."
+          }
+        ]
+      },
+      {
+        "id": 7,
+        "title": "Implement Itinerary History List UI Component",
+        "description": "Create a UI component to display and filter saved itineraries by location, date, and name",
+        "details": "Update travel.html to include an itinerary history list with:\n1. Search/filter inputs for location, date, and name\n2. Paginated list of itineraries\n3. Sorting options\n4. Selection mechanism for retrieving or deleting itineraries\n\nExample HTML/JS:\n```html\n<!-- Itinerary History List -->\n<div class=\"itinerary-history\">\n  <h3>Itinerary History</h3>\n  \n  <!-- Search/Filter Form -->\n  <div class=\"filter-form mb-3\">\n    <div class=\"row\">\n      <div class=\"col-md-4\">\n        <input type=\"text\" id=\"filterLocation\" class=\"form-control\" placeholder=\"Filter by location\">\n      </div>\n      <div class=\"col-md-3\">\n        <input type=\"date\" id=\"filterDate\" class=\"form-control\">\n      </div>\n      <div class=\"col-md-3\">\n        <input type=\"text\" id=\"filterName\" class=\"form-control\" placeholder=\"Filter by name\">\n      </div>\n      <div class=\"col-md-2\">\n        <button id=\"applyFilters\" class=\"btn btn-primary w-100\">Search</button>\n      </div>\n    </div>\n  </div>\n  \n  <!-- Itineraries List -->\n  <div class=\"table-responsive\">\n    <table class=\"table table-hover\">\n      <thead>\n        <tr>\n          <th>Location</th>\n          <th>Date</th>\n          <th>Name</th>\n          <th>Created</th>\n          <th>Actions</th>\n        </tr>\n      </thead>\n      <tbody id=\"itinerariesList\"></tbody>\n    </table>\n  </div>\n  \n  <!-- Pagination -->\n  <div id=\"pagination\" class=\"d-flex justify-content-between align-items-center\">\n    <div>\n      <span id=\"paginationInfo\">Showing 0 of 0</span>\n    </div>\n    <div>\n      <button id=\"prevPage\" class=\"btn btn-sm btn-outline-secondary\">Previous</button>\n      <button id=\"nextPage\" class=\"btn btn-sm btn-outline-secondary\">Next</button>\n    </div>\n  </div>\n</div>\n\n<script>\n  let currentPage = 1;\n  let totalPages = 1;\n  \n  // Load itineraries with filters\n  async function loadItineraries() {\n    const location = document.getElementById('filterLocation').value;\n    const date = document.getElementById('filterDate').value;\n    const name = document.getElementById('filterName').value;\n    \n    try {\n      const queryParams = new URLSearchParams({\n        page: currentPage,\n        limit: 10\n      });\n      \n      if (location) queryParams.append('location', location);\n      if (date) queryParams.append('date', date);\n      if (name) queryParams.append('name', name);\n      \n      const response = await fetch(`/api/itineraries?${queryParams}`);\n      const data = await response.json();\n      \n      if (!response.ok) {\n        throw new Error(data.error || 'Failed to load itineraries');\n      }\n      \n      // Update pagination\n      totalPages = data.pagination.pages;\n      document.getElementById('paginationInfo').textContent = \n        `Showing ${data.itineraries.length} of ${data.pagination.total}`;\n      \n      // Update buttons state\n      document.getElementById('prevPage').disabled = currentPage <= 1;\n      document.getElementById('nextPage').disabled = currentPage >= totalPages;\n      \n      // Render itineraries\n      const listElement = document.getElementById('itinerariesList');\n      listElement.innerHTML = '';\n      \n      data.itineraries.forEach(itinerary => {\n        const row = document.createElement('tr');\n        row.innerHTML = `\n          <td>${itinerary.location}</td>\n          <td>${new Date(itinerary.date).toLocaleDateString()}</td>\n          <td>${itinerary.name || '-'}</td>\n          <td>${new Date(itinerary.createdAt).toLocaleDateString()}</td>\n          <td>\n            <button class=\"btn btn-sm btn-primary retrieve-btn\" data-id=\"${itinerary._id}\">Retrieve</button>\n            <button class=\"btn btn-sm btn-danger delete-btn\" data-id=\"${itinerary._id}\">Delete</button>\n          </td>\n        `;\n        listElement.appendChild(row);\n      });\n      \n      // Add event listeners to buttons\n      document.querySelectorAll('.retrieve-btn').forEach(btn => {\n        btn.addEventListener('click', () => retrieveItinerary(btn.dataset.id));\n      });\n      \n      document.querySelectorAll('.delete-btn').forEach(btn => {\n        btn.addEventListener('click', () => confirmDeleteItinerary(btn.dataset.id));\n      });\n    } catch (error) {\n      console.error('Error loading itineraries:', error);\n    }\n  }\n  \n  // Initial load and event listeners\n  document.addEventListener('DOMContentLoaded', () => {\n    loadItineraries();\n    \n    document.getElementById('applyFilters').addEventListener('click', () => {\n      currentPage = 1;\n      loadItineraries();\n    });\n    \n    document.getElementById('prevPage').addEventListener('click', () => {\n      if (currentPage > 1) {\n        currentPage--;\n        loadItineraries();\n      }\n    });\n    \n    document.getElementById('nextPage').addEventListener('click', () => {\n      if (currentPage < totalPages) {\n        currentPage++;\n        loadItineraries();\n      }\n    });\n  });\n</script>\n```",
+        "testStrategy": "1. Manual testing of filter functionality\n2. Verify pagination works correctly\n3. Test with various data volumes (empty, few items, many items)\n4. Verify sorting and filtering accuracy\n5. Test responsive design on different screen sizes\n6. Verify performance with 100+ itineraries",
+        "priority": "high",
+        "dependencies": [
+          3
+        ],
+        "status": "pending",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Create HTML Structure for Itinerary History Component",
+            "description": "Implement the basic HTML structure for the itinerary history list component including the filter form, table for displaying itineraries, and pagination controls.",
+            "dependencies": [],
+            "details": "Add the following HTML structure to travel.html:\n1. Create a container div with class 'itinerary-history'\n2. Add a heading element for the section\n3. Implement the filter form with inputs for location, date, and name\n4. Create a responsive table structure with appropriate columns (Location, Date, Name, Created, Actions)\n5. Add pagination controls with previous/next buttons and pagination info\n6. Ensure all elements have proper IDs for JavaScript interaction",
+            "status": "pending",
+            "testStrategy": "Verify the HTML structure renders correctly in different browsers and screen sizes. Check that all form elements are accessible and properly labeled."
+          },
+          {
+            "id": 2,
+            "title": "Implement Itinerary Loading and Display Logic",
+            "description": "Create JavaScript functionality to load itineraries from the API and display them in the table with proper formatting.",
+            "dependencies": [
+              "7.1"
+            ],
+            "details": "Create JavaScript functions to:\n1. Implement the loadItineraries() function that fetches data from the API with appropriate query parameters\n2. Parse the API response and dynamically generate table rows for each itinerary\n3. Format dates and other data for display\n4. Handle empty states and error conditions\n5. Update the pagination information based on API response\n6. Initialize the component on page load",
+            "status": "pending",
+            "testStrategy": "Test with various API responses including empty results, single page results, and multi-page results. Verify error handling works correctly when API calls fail."
+          },
+          {
+            "id": 3,
+            "title": "Implement Filtering and Pagination Functionality",
+            "description": "Add JavaScript event handlers for the filter form and pagination controls to allow users to search and navigate through itineraries.",
+            "dependencies": [
+              "7.2"
+            ],
+            "details": "Implement event handlers for:\n1. The search/filter button to apply filters and reset to page 1\n2. Previous and Next pagination buttons to navigate between pages\n3. Add input event listeners for filter fields to enable real-time filtering (optional)\n4. Maintain filter state between pagination actions\n5. Update UI elements (like disabled state of pagination buttons) based on current page and total pages\n6. Implement URL query parameter updates to make filtered views shareable",
+            "status": "pending",
+            "testStrategy": "Test filter combinations with various inputs. Verify pagination works correctly at boundaries (first page, last page). Test that filter state is maintained when navigating pages."
+          },
+          {
+            "id": 4,
+            "title": "Implement Itinerary Retrieval Functionality",
+            "description": "Add functionality to retrieve a selected itinerary and load it into the current view when the user clicks the Retrieve button.",
+            "dependencies": [
+              "7.2"
+            ],
+            "details": "Implement the retrieveItinerary() function that:\n1. Takes an itinerary ID as parameter\n2. Shows a loading indicator during the API request\n3. Makes an API call to fetch the complete itinerary data\n4. Updates the current itinerary view with the retrieved data\n5. Scrolls the user to the itinerary view\n6. Displays appropriate success/error messages\n7. Adds event listeners to all retrieve buttons in the table",
+            "status": "pending",
+            "testStrategy": "Test retrieval with various itinerary types. Verify the UI updates correctly after retrieval. Test error handling when retrieval fails. Verify loading indicators appear and disappear appropriately."
+          },
+          {
+            "id": 5,
+            "title": "Implement Itinerary Deletion Functionality",
+            "description": "Add functionality to delete itineraries with confirmation dialog and update the list after successful deletion.",
+            "dependencies": [
+              "7.2"
+            ],
+            "details": "Implement the deletion workflow:\n1. Create a confirmDeleteItinerary() function that shows a confirmation dialog\n2. Implement deleteItinerary() function that makes the API call to delete the itinerary\n3. Show loading state during deletion\n4. Handle success by refreshing the itinerary list\n5. Handle errors with appropriate user messages\n6. Add event listeners to all delete buttons in the table\n7. Ensure the list updates correctly after deletion without requiring a full page reload",
+            "status": "pending",
+            "testStrategy": "Test the confirmation dialog appears correctly. Verify successful deletions remove items from the list. Test error handling when deletion fails. Verify the UI updates correctly after deletion."
+          }
+        ]
+      },
+      {
+        "id": 8,
+        "title": "Implement Retrieve Itinerary UI Functionality",
+        "description": "Create UI functionality to retrieve and display a selected itinerary from history",
+        "details": "Implement JavaScript functionality to:\n1. Retrieve a selected itinerary by ID\n2. Load the itinerary data into the current view\n3. Display success/error messages\n\nExample JavaScript:\n```javascript\nasync function retrieveItinerary(id) {\n  try {\n    // Show loading indicator\n    const loadingIndicator = document.createElement('div');\n    loadingIndicator.id = 'loadingIndicator';\n    loadingIndicator.innerHTML = '<div class=\"spinner-border text-primary\" role=\"status\"><span class=\"visually-hidden\">Loading...</span></div>';\n    document.body.appendChild(loadingIndicator);\n    \n    // Fetch itinerary data\n    const response = await fetch(`/api/itineraries/${id}`);\n    const itinerary = await response.json();\n    \n    if (!response.ok) {\n      throw new Error(itinerary.error || 'Failed to retrieve itinerary');\n    }\n    \n    // Load itinerary data into current view\n    document.getElementById('itineraryOutput').innerText = itinerary.humanReadable;\n    \n    // Store JSON data for later use\n    window.currentItineraryData = itinerary.jsonVersion;\n    \n    // Pre-fill save form with itinerary details\n    document.getElementById('location').value = itinerary.location;\n    document.getElementById('date').value = new Date(itinerary.date).toISOString().split('T')[0];\n    document.getElementById('name').value = itinerary.name || '';\n    \n    // Show success message\n    const alertElement = document.createElement('div');\n    alertElement.className = 'alert alert-success alert-dismissible fade show';\n    alertElement.innerHTML = `\n      Itinerary loaded successfully!\n      <button type=\"button\" class=\"btn-close\" data-bs-dismiss=\"alert\"></button>\n    `;\n    document.querySelector('.itinerary-container').prepend(alertElement);\n    \n    // Scroll to itinerary output\n    document.getElementById('itineraryOutput').scrollIntoView({ behavior: 'smooth' });\n    \n    // Remove alert after 5 seconds\n    setTimeout(() => {\n      alertElement.remove();\n    }, 5000);\n  } catch (error) {\n    console.error('Error retrieving itinerary:', error);\n    \n    // Show error message\n    const alertElement = document.createElement('div');\n    alertElement.className = 'alert alert-danger alert-dismissible fade show';\n    alertElement.innerHTML = `\n      Error: ${error.message}\n      <button type=\"button\" class=\"btn-close\" data-bs-dismiss=\"alert\"></button>\n    `;\n    document.querySelector('.itinerary-container').prepend(alertElement);\n  } finally {\n    // Remove loading indicator\n    document.getElementById('loadingIndicator')?.remove();\n  }\n}",
+        "testStrategy": "1. Manual testing of retrieval functionality\n2. Verify itinerary data is correctly loaded into the view\n3. Test error handling with invalid or non-existent IDs\n4. Verify loading indicators work correctly\n5. Test with various itinerary data sizes\n6. Verify response time is under 2 seconds",
+        "priority": "high",
+        "dependencies": [
+          4,
+          7
+        ],
+        "status": "pending",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Create Loading Indicator Component",
+            "description": "Implement a reusable loading indicator component that can be shown during API calls to retrieve itineraries",
+            "dependencies": [],
+            "details": "Create a function that generates and manages a loading indicator element. The function should:\n1. Create a div element with appropriate styling\n2. Add a spinner with Bootstrap classes\n3. Append it to the document body\n4. Return a reference to the element for later removal\n5. Include a method to remove the indicator when operations complete",
+            "status": "pending",
+            "testStrategy": "Test the loading indicator appears and disappears correctly in different browser environments. Verify it's properly centered and visible on various screen sizes."
+          },
+          {
+            "id": 2,
+            "title": "Implement Fetch Itinerary API Call",
+            "description": "Create a function to fetch itinerary data from the server by ID",
+            "dependencies": [
+              "8.1"
+            ],
+            "details": "Implement an async function that:\n1. Takes an itinerary ID as parameter\n2. Shows the loading indicator before making the API call\n3. Makes a fetch request to `/api/itineraries/${id}`\n4. Handles response parsing and error checking\n5. Removes the loading indicator when complete\n6. Returns the itinerary data or throws an appropriate error",
+            "status": "pending",
+            "testStrategy": "Test with valid and invalid IDs. Mock API responses to test success and error handling. Verify proper error messages are generated for different failure scenarios."
+          },
+          {
+            "id": 3,
+            "title": "Implement Itinerary Data Population",
+            "description": "Create functionality to populate the UI with retrieved itinerary data",
+            "dependencies": [
+              "8.2"
+            ],
+            "details": "Implement a function that:\n1. Takes the retrieved itinerary data as input\n2. Updates the itinerary output area with the human-readable content\n3. Stores the JSON version in a global variable for later use\n4. Pre-fills the form fields (location, date, name) with the itinerary details\n5. Handles any data format conversions needed (e.g., date formatting)\n6. Implements scrolling to the populated content",
+            "status": "pending",
+            "testStrategy": "Test with various itinerary data structures. Verify all form fields are correctly populated. Test with edge cases like missing optional fields."
+          },
+          {
+            "id": 4,
+            "title": "Implement Notification System",
+            "description": "Create a system for displaying success and error messages to the user",
+            "dependencies": [],
+            "details": "Implement functions to:\n1. Create and display alert elements with appropriate styling (success/error)\n2. Support dismissible alerts with close buttons\n3. Position alerts at the top of the itinerary container\n4. Automatically remove alerts after a configurable timeout\n5. Handle multiple concurrent alerts if needed\n6. Ensure alerts are accessible and clearly visible",
+            "status": "pending",
+            "testStrategy": "Test different message types and lengths. Verify auto-dismissal works correctly. Test multiple alerts appearing in sequence. Verify accessibility compliance."
+          },
+          {
+            "id": 5,
+            "title": "Integrate Complete Retrieve Itinerary Function",
+            "description": "Combine all components into a complete retrieveItinerary function",
+            "dependencies": [
+              "8.1",
+              "8.2",
+              "8.3",
+              "8.4"
+            ],
+            "details": "Create the main retrieveItinerary function that:\n1. Takes an itinerary ID as parameter\n2. Uses the loading indicator component to show loading state\n3. Calls the fetch function to retrieve data\n4. Uses the data population function to update the UI\n5. Shows appropriate success/error notifications\n6. Implements proper error handling with try/catch\n7. Ensures the loading indicator is always removed in the finally block\n8. Adds event listeners to connect this function to UI elements",
+            "status": "pending",
+            "testStrategy": "Perform end-to-end testing of the complete flow. Test the full user journey from clicking to retrieve an itinerary through to seeing the populated data. Verify all error scenarios are handled gracefully."
+          }
+        ]
+      },
+      {
+        "id": 9,
+        "title": "Implement Delete Itinerary UI Functionality",
+        "description": "Create UI functionality to delete a selected itinerary with confirmation dialog",
+        "details": "Implement JavaScript functionality to:\n1. Show a confirmation dialog before deletion\n2. Delete the selected itinerary if confirmed\n3. Update the itinerary list after deletion\n4. Display success/error messages\n\nExample JavaScript:\n```javascript\nfunction confirmDeleteItinerary(id) {\n  // Create modal for confirmation\n  const modal = document.createElement('div');\n  modal.className = 'modal fade';\n  modal.id = 'deleteConfirmModal';\n  modal.setAttribute('tabindex', '-1');\n  modal.innerHTML = `\n    <div class=\"modal-dialog\">\n      <div class=\"modal-content\">\n        <div class=\"modal-header\">\n          <h5 class=\"modal-title\">Confirm Deletion</h5>\n          <button type=\"button\" class=\"btn-close\" data-bs-dismiss=\"modal\"></button>\n        </div>\n        <div class=\"modal-body\">\n          <p>Are you sure you want to delete this itinerary? This action cannot be undone.</p>\n        </div>\n        <div class=\"modal-footer\">\n          <button type=\"button\" class=\"btn btn-secondary\" data-bs-dismiss=\"modal\">Cancel</button>\n          <button type=\"button\" class=\"btn btn-danger\" id=\"confirmDeleteBtn\">Delete</button>\n        </div>\n      </div>\n    </div>\n  `;\n  \n  document.body.appendChild(modal);\n  \n  // Initialize Bootstrap modal\n  const modalInstance = new bootstrap.Modal(modal);\n  modalInstance.show();\n  \n  // Handle delete confirmation\n  document.getElementById('confirmDeleteBtn').addEventListener('click', async () => {\n    try {\n      modalInstance.hide();\n      \n      // Show loading indicator\n      const loadingIndicator = document.createElement('div');\n      loadingIndicator.id = 'deleteLoadingIndicator';\n      loadingIndicator.innerHTML = '<div class=\"spinner-border text-primary\" role=\"status\"><span class=\"visually-hidden\">Deleting...</span></div>';\n      document.body.appendChild(loadingIndicator);\n      \n      // Delete itinerary\n      const response = await fetch(`/api/itineraries/${id}`, {\n        method: 'DELETE'\n      });\n      \n      const result = await response.json();\n      \n      if (!response.ok) {\n        throw new Error(result.error || 'Failed to delete itinerary');\n      }\n      \n      // Show success message\n      const alertElement = document.createElement('div');\n      alertElement.className = 'alert alert-success alert-dismissible fade show';\n      alertElement.innerHTML = `\n        Itinerary deleted successfully!\n        <button type=\"button\" class=\"btn-close\" data-bs-dismiss=\"alert\"></button>\n      `;\n      document.querySelector('.itinerary-history').prepend(alertElement);\n      \n      // Reload itineraries list\n      loadItineraries();\n      \n      // Remove alert after 5 seconds\n      setTimeout(() => {\n        alertElement.remove();\n      }, 5000);\n    } catch (error) {\n      console.error('Error deleting itinerary:', error);\n      \n      // Show error message\n      const alertElement = document.createElement('div');\n      alertElement.className = 'alert alert-danger alert-dismissible fade show';\n      alertElement.innerHTML = `\n        Error: ${error.message}\n        <button type=\"button\" class=\"btn-close\" data-bs-dismiss=\"alert\"></button>\n      `;\n      document.querySelector('.itinerary-history').prepend(alertElement);\n    } finally {\n      // Remove loading indicator\n      document.getElementById('deleteLoadingIndicator')?.remove();\n      \n      // Remove modal from DOM after hiding\n      modal.addEventListener('hidden.bs.modal', () => {\n        modal.remove();\n      });\n    }\n  });\n  \n  // Remove modal from DOM when closed\n  modal.addEventListener('hidden.bs.modal', () => {\n    modal.remove();\n  });\n}",
+        "testStrategy": "1. Manual testing of delete confirmation dialog\n2. Verify cancellation works correctly\n3. Test successful deletion updates the list\n4. Test error handling with invalid or non-existent IDs\n5. Verify loading indicators work correctly\n6. Test with various user roles to ensure only Travel Coordinators can delete",
+        "priority": "medium",
+        "dependencies": [
+          5,
+          7
+        ],
+        "status": "pending",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Create Confirmation Modal Component",
+            "description": "Implement a reusable confirmation modal component that will be shown before deleting an itinerary. The modal should include a title, warning message, cancel button, and delete button.",
+            "dependencies": [],
+            "details": "Create a function that generates a Bootstrap modal for confirmation. The modal should be dynamically created and appended to the DOM when needed. Include proper event listeners for both cancel and confirm actions. Ensure the modal is properly removed from the DOM after it's closed to prevent memory leaks.",
+            "status": "pending",
+            "testStrategy": "Test modal appearance and layout. Verify both cancel and confirm buttons are clickable. Check that the modal is properly removed from DOM after closing."
+          },
+          {
+            "id": 2,
+            "title": "Implement Delete API Call Function",
+            "description": "Create a function that makes an API call to delete an itinerary by its ID and handles the response appropriately.",
+            "dependencies": [
+              "9.1"
+            ],
+            "details": "Implement an async function that sends a DELETE request to the '/api/itineraries/:id' endpoint. The function should include error handling for network issues and server errors. Use fetch API with appropriate headers and handle both successful and error responses from the server.",
+            "status": "pending",
+            "testStrategy": "Test with valid and invalid itinerary IDs. Verify proper error handling for network failures and server errors. Mock API responses to test different scenarios."
+          },
+          {
+            "id": 3,
+            "title": "Add Loading Indicator for Delete Operation",
+            "description": "Implement a loading indicator that displays while the delete operation is in progress to provide visual feedback to the user.",
+            "dependencies": [
+              "9.2"
+            ],
+            "details": "Create a function to show and hide a loading spinner during the delete operation. The spinner should be displayed immediately after confirmation and removed once the operation completes (whether successful or not). Use Bootstrap's spinner component for consistency with the rest of the UI.",
+            "status": "pending",
+            "testStrategy": "Verify loading indicator appears when delete is confirmed and disappears when operation completes. Test with both quick and delayed API responses."
+          },
+          {
+            "id": 4,
+            "title": "Implement Success and Error Notifications",
+            "description": "Create functions to display success and error messages after the delete operation completes to inform the user of the outcome.",
+            "dependencies": [
+              "9.2",
+              "9.3"
+            ],
+            "details": "Implement functions that create and display Bootstrap alert components for both success and error scenarios. Success alerts should be green and indicate the itinerary was deleted successfully. Error alerts should be red and display the specific error message. Both types of alerts should be dismissible and automatically disappear after 5 seconds.",
+            "status": "pending",
+            "testStrategy": "Test appearance of success and error notifications. Verify messages are clear and helpful. Check that alerts automatically disappear after the timeout period. Test with various error messages."
+          },
+          {
+            "id": 5,
+            "title": "Integrate Delete Functionality with Itinerary List",
+            "description": "Connect the delete functionality to the itinerary list UI by adding delete buttons and refreshing the list after successful deletion.",
+            "dependencies": [
+              "9.1",
+              "9.2",
+              "9.3",
+              "9.4"
+            ],
+            "details": "Add delete buttons or icons to each itinerary in the list. Attach event listeners to these buttons that call the confirmation modal function with the appropriate itinerary ID. After successful deletion, call the existing loadItineraries() function to refresh the list. Ensure proper UI updates occur regardless of success or failure.",
+            "status": "pending",
+            "testStrategy": "Test end-to-end delete flow from clicking delete button to list refresh. Verify itinerary disappears from list after successful deletion. Test cancellation flow to ensure itinerary remains in list when delete is cancelled."
+          }
+        ]
+      },
+      {
+        "id": 10,
+        "title": "Implement Authentication for Travel Coordinators",
+        "description": "Create authentication middleware to ensure only Travel Coordinators can access history features",
+        "details": "Implement authentication middleware that:\n1. Verifies user is logged in\n2. Checks if user has Travel Coordinator role\n3. Restricts access to history features for unauthorized users\n4. Applies to all history-related API endpoints\n\nExample implementation:\n```javascript\n// Authentication middleware\nfunction authenticateTravelCoordinator(req, res, next) {\n  // Check if user is authenticated\n  if (!req.session || !req.session.user) {\n    return res.status(401).json({ error: 'Authentication required' });\n  }\n  \n  // Check if user has Travel Coordinator role\n  if (!req.session.user.roles.includes('travel_coordinator')) {\n    return res.status(403).json({ error: 'Access denied. Travel Coordinator role required' });\n  }\n  \n  // User is authenticated and authorized\n  next();\n}\n\n// Apply middleware to all itinerary endpoints\napp.use('/api/itineraries', authenticateTravelCoordinator);\n\n// Or apply to specific endpoints\napp.post('/api/itineraries', authenticateTravelCoordinator, async (req, res) => {\n  // Handler code\n});\n\n// Client-side authentication check\nfunction checkTravelCoordinatorAccess() {\n  // Fetch current user info\n  fetch('/api/user/current')\n    .then(response => response.json())\n    .then(user => {\n      const isTravelCoordinator = user.roles.includes('travel_coordinator');\n      \n      // Show/hide history features based on role\n      const historyElements = document.querySelectorAll('.history-feature');\n      historyElements.forEach(el => {\n        el.style.display = isTravelCoordinator ? 'block' : 'none';\n      });\n      \n      // Show message if not authorized\n      if (!isTravelCoordinator) {\n        const alertElement = document.createElement('div');\n        alertElement.className = 'alert alert-warning';\n        alertElement.textContent = 'History features are only available to Travel Coordinators.';\n        document.querySelector('.itinerary-container').prepend(alertElement);\n      }\n    })\n    .catch(error => console.error('Error checking user role:', error));\n}",
+        "testStrategy": "1. Unit test middleware with various user roles\n2. Integration test API endpoints with authenticated and unauthenticated requests\n3. Test with valid Travel Coordinator credentials\n4. Test with non-Travel Coordinator credentials\n5. Verify UI elements are correctly shown/hidden based on role\n6. Test session expiration handling",
+        "priority": "high",
+        "dependencies": [
+          2,
+          3,
+          5
+        ],
+        "status": "pending",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Create User Authentication Verification Middleware",
+            "description": "Implement middleware function to verify if a user is logged in by checking session data",
+            "dependencies": [],
+            "details": "Create a middleware function that checks if the user has an active session and is logged in. If not, return a 401 Unauthorized response. The function should:\n1. Check if req.session exists\n2. Check if req.session.user exists\n3. If either check fails, return a 401 response with appropriate error message\n4. Otherwise, call next() to proceed to the next middleware",
+            "status": "pending",
+            "testStrategy": "1. Unit test with mock request objects containing valid session data\n2. Unit test with mock request objects containing invalid/missing session data\n3. Verify 401 status code is returned for unauthenticated requests\n4. Verify next() is called for authenticated requests"
+          },
+          {
+            "id": 2,
+            "title": "Implement Role Verification for Travel Coordinators",
+            "description": "Create middleware function to check if the authenticated user has the Travel Coordinator role",
+            "dependencies": [
+              "10.1"
+            ],
+            "details": "Extend the authentication middleware to verify the user's role:\n1. Assume the user is already authenticated (from previous middleware)\n2. Check if req.session.user.roles includes 'travel_coordinator'\n3. If the role check fails, return a 403 Forbidden response with appropriate error message\n4. If the user has the required role, call next() to proceed",
+            "status": "pending",
+            "testStrategy": "1. Unit test with mock request objects containing users with Travel Coordinator role\n2. Unit test with mock request objects containing users without Travel Coordinator role\n3. Verify 403 status code is returned for unauthorized users\n4. Verify next() is called for authorized users"
+          },
+          {
+            "id": 3,
+            "title": "Create Combined Authentication Middleware",
+            "description": "Combine user authentication and role verification into a single middleware function for Travel Coordinators",
+            "dependencies": [
+              "10.1",
+              "10.2"
+            ],
+            "details": "Create a combined middleware function that:\n1. First checks if the user is authenticated\n2. Then checks if the user has the Travel Coordinator role\n3. Returns appropriate error responses for authentication or authorization failures\n4. Calls next() only if both checks pass\n\nExample implementation:\n```javascript\nfunction authenticateTravelCoordinator(req, res, next) {\n  // Check if user is authenticated\n  if (!req.session || !req.session.user) {\n    return res.status(401).json({ error: 'Authentication required' });\n  }\n  \n  // Check if user has Travel Coordinator role\n  if (!req.session.user.roles.includes('travel_coordinator')) {\n    return res.status(403).json({ error: 'Access denied. Travel Coordinator role required' });\n  }\n  \n  // User is authenticated and authorized\n  next();\n}\n```",
+            "status": "pending",
+            "testStrategy": "1. Integration test with various user scenarios (unauthenticated, authenticated without role, authenticated with role)\n2. Verify correct status codes and error messages are returned\n3. Test with valid session data but missing roles array"
+          },
+          {
+            "id": 4,
+            "title": "Apply Authentication Middleware to History API Endpoints",
+            "description": "Apply the Travel Coordinator authentication middleware to all history-related API endpoints",
+            "dependencies": [
+              "10.3"
+            ],
+            "details": "Apply the authentication middleware to all history-related API endpoints:\n1. Identify all history-related API routes (e.g., /api/itineraries, /api/itineraries/:id)\n2. Apply the authenticateTravelCoordinator middleware to these routes\n3. Ensure middleware is applied before route handlers\n\nImplementation options:\n- Apply to all routes under a specific path: `app.use('/api/itineraries', authenticateTravelCoordinator);`\n- Apply to individual routes: `app.get('/api/itineraries/:id', authenticateTravelCoordinator, routeHandler);`\n- Apply to specific HTTP methods as needed",
+            "status": "pending",
+            "testStrategy": "1. Integration test each protected endpoint with authenticated and unauthenticated requests\n2. Verify unauthenticated requests receive 401 responses\n3. Verify authenticated requests without proper role receive 403 responses\n4. Verify authenticated requests with proper role can access the endpoints"
+          },
+          {
+            "id": 5,
+            "title": "Implement Client-Side Authentication Check for UI Elements",
+            "description": "Create client-side JavaScript to show/hide history features based on user role",
+            "dependencies": [
+              "10.3"
+            ],
+            "details": "Implement client-side authentication check to control UI visibility:\n1. Create a function to fetch current user information from the server\n2. Check if the user has the Travel Coordinator role\n3. Show/hide history-related UI elements based on the role check\n4. Display appropriate messages for unauthorized users\n\nExample implementation:\n```javascript\nfunction checkTravelCoordinatorAccess() {\n  // Fetch current user info\n  fetch('/api/user/current')\n    .then(response => response.json())\n    .then(user => {\n      const isTravelCoordinator = user.roles.includes('travel_coordinator');\n      \n      // Show/hide history features based on role\n      const historyElements = document.querySelectorAll('.history-feature');\n      historyElements.forEach(el => {\n        el.style.display = isTravelCoordinator ? 'block' : 'none';\n      });\n      \n      // Show message if not authorized\n      if (!isTravelCoordinator) {\n        const alertElement = document.createElement('div');\n        alertElement.className = 'alert alert-warning';\n        alertElement.textContent = 'History features are only available to Travel Coordinators.';\n        document.querySelector('.itinerary-container').prepend(alertElement);\n      }\n    })\n    .catch(error => console.error('Error checking user role:', error));\n}\n```",
+            "status": "pending",
+            "testStrategy": "1. Manual testing with different user roles\n2. Verify history UI elements are correctly shown/hidden based on role\n3. Test with network errors to ensure error handling works\n4. Verify appropriate messages are displayed for unauthorized users"
+          }
+        ]
+      }
+    ],
+    "metadata": {
+      "created": "2025-09-15T13:22:09.933Z",
+      "updated": "2025-09-15T13:22:09.933Z",
+      "description": "All tasks related to itinerary history and versioning."
+    }
+  },
+  "travel-itinerary-ui": {
+    "tasks": [
+      {
+        "id": 1,
+        "title": "Update Travel Schema to Rename Contact Fields",
+        "description": "Modify the travel-schema.json to rename 'top_contacts_vcards' to 'contacts_vcards' to reflect the change in displaying all contacts instead of just the top three.",
+        "details": "1. Locate the travel-schema.json file\n2. Find the field definition for 'top_contacts_vcards'\n3. Rename it to 'contacts_vcards'\n4. Update any references or documentation for this field\n5. Ensure backward compatibility by handling both field names during a transition period if necessary\n\nExample change:\n```json\n// Before\n{\n  \"properties\": {\n    \"top_contacts_vcards\": {\n      \"type\": \"array\",\n      \"items\": { \"type\": \"string\" }\n    }\n  }\n}\n\n// After\n{\n  \"properties\": {\n    \"contacts_vcards\": {\n      \"type\": \"array\",\n      \"items\": { \"type\": \"string\" }\n    }\n  }\n}\n```",
+        "testStrategy": "1. Validate the updated schema against existing data\n2. Ensure the API still accepts and processes requests with the old field name\n3. Verify that new requests using the updated field name are processed correctly\n4. Run integration tests to confirm the schema changes don't break existing functionality",
+        "priority": "high",
+        "dependencies": [],
+        "status": "done",
+        "subtasks": []
+      },
+      {
+        "id": 2,
+        "title": "Update API Endpoint to Handle Renamed Contact Fields",
+        "description": "Modify the travel.js API endpoint to work with the renamed 'contacts_vcards' field while maintaining backward compatibility.",
+        "details": "1. Locate the travel.js API endpoint file\n2. Update the code to handle both 'top_contacts_vcards' and 'contacts_vcards' field names\n3. Implement logic to prioritize 'contacts_vcards' if both are present\n4. Ensure the data is correctly passed to the rendering functions\n\nExample implementation:\n```javascript\n// In the API endpoint handler\nconst contactsData = data.contacts_vcards || data.top_contacts_vcards || [];\n\n// Pass this to the rendering function\nconst html = travelService.parseResponse({\n  ...,\n  contacts_vcards: contactsData,\n  ...\n});\n```",
+        "testStrategy": "1. Create unit tests for the updated endpoint with various input combinations\n2. Test with requests containing only the old field name\n3. Test with requests containing only the new field name\n4. Test with requests containing both field names\n5. Verify the endpoint correctly prioritizes and processes the data",
+        "priority": "high",
+        "dependencies": [
+          1
+        ],
+        "status": "done",
+        "subtasks": []
+      },
+      {
+        "id": 3,
+        "title": "Modify Contact Rendering Function to Display All Contacts",
+        "description": "Update the renderTopContactsSection function in api/travelService/service.js to process and display all contacts from the contacts_vcards array instead of limiting to the top three.",
+        "details": "1. Locate the renderTopContactsSection function in api/travelService/service.js\n2. Rename the function to renderContactsSection to reflect its new purpose\n3. Remove any code that limits the display to only three contacts\n4. Update the section header from 'Top 3 Contacts' to 'Contact Information'\n5. Ensure all contacts from the array are processed and displayed\n\nExample implementation:\n```javascript\nfunction renderContactsSection(contactsVcards) {\n  if (!contactsVcards || contactsVcards.length === 0) {\n    return '';\n  }\n  \n  let html = '<div class=\"section collapsible collapsed\" id=\"contacts-section\">';\n  html += '<h2 class=\"section-header\">Contact Information <span class=\"toggle-icon\">+</span></h2>';\n  html += '<div class=\"section-content hidden\">';\n  \n  // Process all contacts instead of limiting to 3\n  contactsVcards.forEach(vcard => {\n    // Parse and format vcard data\n    const contactInfo = parseVcard(vcard);\n    html += `<div class=\"contact\">...</div>`;\n  });\n  \n  html += '</div></div>';\n  return html;\n}\n```",
+        "testStrategy": "1. Create unit tests for the updated renderContactsSection function\n2. Test with empty input, single contact, and multiple contacts\n3. Verify the function correctly processes all contacts without limitation\n4. Check that the HTML output includes the correct section header and structure\n5. Validate that the output includes the collapsible functionality",
+        "priority": "high",
+        "dependencies": [
+          2
+        ],
+        "status": "done",
+        "subtasks": []
+      },
+      {
+        "id": 4,
+        "title": "Implement Collapsible Verification Report Section",
+        "description": "Modify the verification report section to be collapsed by default with a toggle control to expand/collapse it.",
+        "details": "1. Locate the function that renders the verification report section\n2. Update the HTML structure to include collapsible functionality\n3. Add CSS classes for collapsed/expanded states\n4. Ensure the section is collapsed by default\n5. Add a toggle control (button or clickable header)\n\nExample implementation:\n```javascript\nfunction renderVerificationSection(verificationData) {\n  if (!verificationData) {\n    return '';\n  }\n  \n  let html = '<div class=\"section collapsible collapsed\" id=\"verification-section\">';\n  html += '<h2 class=\"section-header\">Verification <span class=\"toggle-icon\">+</span></h2>';\n  html += '<div class=\"section-content hidden\">';\n  \n  // Existing verification content rendering\n  html += formatVerificationContent(verificationData);\n  \n  html += '</div></div>';\n  return html;\n}\n```",
+        "testStrategy": "1. Create unit tests for the updated verification section rendering\n2. Verify the section is properly structured with collapsible elements\n3. Test that the default state is collapsed\n4. Ensure the toggle control is present and correctly formatted\n5. Validate the HTML output against accessibility standards",
+        "priority": "high",
+        "dependencies": [],
+        "status": "done",
+        "subtasks": []
+      },
+      {
+        "id": 5,
+        "title": "Create Data Sources Section Renderer",
+        "description": "Implement a new function to render a 'Data Sources' section that displays the URLs from the meta.sources array as clickable links.",
+        "details": "1. Create a new function renderSourcesSection in api/travelService/service.js\n2. The function should accept the meta.sources array as input\n3. Generate HTML that displays each source URL as a clickable link\n4. Links should open in a new tab\n5. If the sources array is empty or not present, return an empty string\n\nExample implementation:\n```javascript\nfunction renderSourcesSection(sources) {\n  if (!sources || sources.length === 0) {\n    return '';\n  }\n  \n  let html = '<div class=\"section\" id=\"sources-section\">';\n  html += '<h2 class=\"section-header\">Data Sources</h2>';\n  html += '<ul class=\"sources-list\">';\n  \n  sources.forEach(source => {\n    html += `<li><a href=\"${source}\" target=\"_blank\" rel=\"noopener noreferrer\">${source}</a></li>`;\n  });\n  \n  html += '</ul></div>';\n  return html;\n}\n```",
+        "testStrategy": "1. Create unit tests for the new renderSourcesSection function\n2. Test with empty input, single source, and multiple sources\n3. Verify the function correctly formats URLs as clickable links\n4. Check that links have the target=\"_blank\" attribute\n5. Validate that the function returns an empty string when sources is empty or null",
+        "priority": "medium",
+        "dependencies": [],
+        "status": "done",
+        "subtasks": []
+      },
+      {
+        "id": 6,
+        "title": "Update Main parseResponse Function to Include New Sections",
+        "description": "Modify the main parseResponse function in api/travelService/service.js to incorporate the new and updated sections (contacts, verification, sources) in the final HTML output.",
+        "details": "1. Locate the parseResponse function in api/travelService/service.js\n2. Update references to renderTopContactsSection to use the renamed renderContactsSection\n3. Ensure the verification section is included with collapsible functionality\n4. Add a call to the new renderSourcesSection function\n5. Append the sources section to the final HTML output\n\nExample implementation:\n```javascript\nfunction parseResponse(data) {\n  let html = '<div class=\"travel-itinerary\">';\n  \n  // Existing sections\n  html += renderHeaderSection(data);\n  html += renderMainItinerarySection(data);\n  \n  // Updated contacts section (renamed function)\n  html += renderContactsSection(data.contacts_vcards || data.top_contacts_vcards);\n  \n  // Verification section (now collapsible)\n  html += renderVerificationSection(data.verification);\n  \n  // New sources section\n  html += renderSourcesSection(data.meta?.sources);\n  \n  html += '</div>';\n  return html;\n}\n```",
+        "testStrategy": "1. Create integration tests for the parseResponse function\n2. Verify all sections are included in the correct order\n3. Test with various combinations of input data\n4. Ensure the function correctly handles missing or empty data\n5. Validate the complete HTML output against expected structure",
+        "priority": "high",
+        "dependencies": [
+          3,
+          4,
+          5
+        ],
+        "status": "done",
+        "subtasks": []
+      },
+      {
+        "id": 7,
+        "title": "Implement CSS Styles for Collapsible Sections",
+        "description": "Create CSS styles to support the collapsible functionality for the verification and contact information sections.",
+        "details": "1. Create or update the CSS file for the travel itinerary\n2. Add styles for the collapsible sections\n3. Define styles for collapsed and expanded states\n4. Style the toggle controls (icons or buttons)\n5. Ensure smooth transitions between states\n\nExample CSS:\n```css\n.collapsible .section-header {\n  cursor: pointer;\n  display: flex;\n  justify-content: space-between;\n  align-items: center;\n}\n\n.collapsible .toggle-icon {\n  font-size: 1.2em;\n  transition: transform 0.3s ease;\n}\n\n.collapsible.expanded .toggle-icon {\n  transform: rotate(45deg);\n}\n\n.section-content.hidden {\n  display: none;\n}\n\n.section-content {\n  transition: max-height 0.3s ease;\n}\n```",
+        "testStrategy": "1. Test the CSS in different browsers to ensure cross-browser compatibility\n2. Verify the styles work correctly on different screen sizes\n3. Check that transitions are smooth and performant\n4. Validate the CSS against accessibility standards\n5. Ensure the toggle controls are visually intuitive",
+        "priority": "medium",
+        "dependencies": [
+          4,
+          3
+        ],
+        "status": "done",
+        "subtasks": []
+      },
+      {
+        "id": 8,
+        "title": "Implement JavaScript for Toggle Functionality",
+        "description": "Create JavaScript code to handle the toggling of collapsible sections when the user clicks the toggle control.",
+        "details": "1. Create or update the JavaScript file for the travel itinerary\n2. Implement event listeners for the collapsible section headers\n3. Toggle the appropriate classes when a section is clicked\n4. Update the toggle icon to reflect the current state\n5. Ensure the functionality works with dynamically added content\n\nExample JavaScript:\n```javascript\ndocument.addEventListener('DOMContentLoaded', function() {\n  // Find all collapsible sections\n  const collapsibleSections = document.querySelectorAll('.collapsible');\n  \n  // Add click event listeners to each section header\n  collapsibleSections.forEach(section => {\n    const header = section.querySelector('.section-header');\n    const content = section.querySelector('.section-content');\n    \n    header.addEventListener('click', function() {\n      // Toggle the collapsed/expanded classes\n      section.classList.toggle('collapsed');\n      section.classList.toggle('expanded');\n      \n      // Toggle the hidden class on the content\n      content.classList.toggle('hidden');\n      \n      // Update the toggle icon\n      const icon = header.querySelector('.toggle-icon');\n      icon.textContent = section.classList.contains('collapsed') ? '+' : '-';\n    });\n  });\n});\n```",
+        "testStrategy": "1. Create unit tests for the toggle functionality\n2. Test clicking on different sections to ensure they expand/collapse correctly\n3. Verify the toggle icon updates appropriately\n4. Test with keyboard navigation for accessibility\n5. Ensure the functionality works across different browsers",
+        "priority": "high",
+        "dependencies": [
+          7
+        ],
+        "status": "done",
+        "subtasks": []
+      },
+      {
+        "id": 9,
+        "title": "Update Integration Tests for New Features",
+        "description": "Update existing integration tests to account for the new collapsible sections and data sources display.",
+        "details": "1. Locate the existing integration tests for the travel itinerary\n2. Update test expectations to account for the collapsible sections\n3. Add tests for the new data sources section\n4. Ensure tests verify both collapsed and expanded states\n5. Test the toggle functionality\n\nExample test updates:\n```javascript\ndescribe('Travel Itinerary UI', () => {\n  it('should render verification section collapsed by default', () => {\n    const html = travelService.parseResponse(mockData);\n    const dom = new JSDOM(html);\n    const verificationSection = dom.window.document.querySelector('#verification-section');\n    \n    expect(verificationSection.classList.contains('collapsed')).toBe(true);\n    expect(verificationSection.querySelector('.section-content').classList.contains('hidden')).toBe(true);\n  });\n  \n  it('should render contacts section collapsed by default', () => {\n    const html = travelService.parseResponse(mockData);\n    const dom = new JSDOM(html);\n    const contactsSection = dom.window.document.querySelector('#contacts-section');\n    \n    expect(contactsSection.classList.contains('collapsed')).toBe(true);\n    expect(contactsSection.querySelector('.section-content').classList.contains('hidden')).toBe(true);\n  });\n  \n  it('should render data sources section when sources are provided', () => {\n    const mockDataWithSources = {\n      ...mockData,\n      meta: { sources: ['https://example.com/source1', 'https://example.com/source2'] }\n    };\n    const html = travelService.parseResponse(mockDataWithSources);\n    const dom = new JSDOM(html);\n    const sourcesSection = dom.window.document.querySelector('#sources-section');\n    \n    expect(sourcesSection).not.toBeNull();\n    expect(sourcesSection.querySelectorAll('a').length).toBe(2);\n  });\n});\n```",
+        "testStrategy": "1. Run the updated integration tests against the new implementation\n2. Verify all tests pass with the expected outcomes\n3. Test with various mock data scenarios\n4. Ensure edge cases are covered (empty data, missing fields, etc.)\n5. Validate that the tests accurately reflect the requirements",
+        "priority": "medium",
+        "dependencies": [
+          6,
+          8
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 10,
+        "title": "Create Documentation for UI Changes",
+        "description": "Document the new UI features and behavior for developers and stakeholders, including how to use and interact with the collapsible sections and data sources display.",
+        "details": "1. Create or update documentation for the travel itinerary UI\n2. Document the collapsible sections functionality\n3. Explain how to interact with the toggle controls\n4. Describe the data sources section and its purpose\n5. Include screenshots or diagrams of the new UI\n\nDocumentation should cover:\n- Default state of the UI (which sections are collapsed)\n- How to expand/collapse sections\n- What information is displayed in each section\n- How data sources are presented and linked\n- Any keyboard shortcuts or accessibility features\n\nExample documentation:\n```markdown\n# Travel Itinerary UI Guide\n\n## Collapsible Sections\nThe Travel Itinerary now features collapsible sections to improve readability:\n\n- **Verification Report**: Collapsed by default. Click the section header or the '+' icon to expand.\n- **Contact Information**: Collapsed by default. Contains all contacts from the travel plan.\n\n## Data Sources\nA new 'Data Sources' section displays the origins of the itinerary information:\n\n- Each source is displayed as a clickable link\n- Links open in a new tab\n- This section only appears when source data is available\n```",
+        "testStrategy": "1. Review documentation for accuracy and completeness\n2. Verify all new features are properly documented\n3. Ensure documentation matches the actual implementation\n4. Have stakeholders review the documentation for clarity\n5. Update documentation based on feedback",
+        "priority": "low",
+        "dependencies": [
+          6,
+          7,
+          8
+        ],
+        "status": "pending",
+        "subtasks": []
+      }
+    ],
+    "metadata": {
+      "created": "2025-09-15T15:30:00.775Z",
+      "updated": "2025-09-16T02:35:42.500Z",
+      "description": "Tasks for travel-itinerary-ui context"
+    }
   }
 }

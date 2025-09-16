@@ -79,9 +79,9 @@ function renderCategorySection(categoryName, items) {
   return out;
 }
 
-function renderTopContactsSection(vcards) {
+function renderContactsSection(vcards) {
   if (!vcards || vcards.length === 0) return '';
-  let out = `<section class="top-contacts"><h2>Top contacts</h2>`;
+  let out = `<section class="top-contacts"><h2>Contacts</h2>`;
   vcards.forEach(c => {
     const slug = slugify(c.name || 'contact', { lower: true, strict: true });
     const tel = c.tel ? c.tel.replace(/[^+\d]/g, '') : '';
@@ -100,6 +100,17 @@ function renderTopContactsSection(vcards) {
   return out;
 }
 
+function renderSourcesSection(sources) {
+  if (!sources || sources.length === 0) return '';
+  let out = `<section class="sources"><h2>Data Sources</h2><ul>`;
+  sources.forEach(source => {
+    const href = source.startsWith('http') ? source : 'https://' + source;
+    out += `<li><a href="${escapeHtml(href)}" target="_blank" rel="noopener">${escapeHtml(source)}</a></li>`;
+  });
+  out += `</ul></section>`;
+  return out;
+}
+
 function renderParsedJsonAsHtml(parsed) {
   if (!parsed) return '';
   const categories = parsed.categories || {};
@@ -109,7 +120,8 @@ function renderParsedJsonAsHtml(parsed) {
     out += renderCategorySection(key, categories[key]);
   }
 
-  out += renderTopContactsSection(parsed.top_contacts_vcards);
+  const contacts = parsed.contacts_vcards || parsed.top_contacts_vcards;
+  out += renderContactsSection(contacts);
 
   out += '</div>';
   return out;
@@ -150,9 +162,10 @@ export const parseResponse = (travelPlan) => {
 
   // Render the structured categories and contacts from the JSON object
   const jsonHtml = renderParsedJsonAsHtml(travelPlan);
+  const sourcesHtml = renderSourcesSection(travelPlan.meta?.sources);
 
   // Combine and sanitize
-  const combined = `<div class="travel-output">${metaHtml}${reportHtml}${jsonHtml}</div>`;
+  const combined = `<div class="travel-output">${metaHtml}${reportHtml}${jsonHtml}${sourcesHtml}</div>`;
   logger.info('combined: %j', combined);
 
   const safe = sanitizeHtml(combined, {
