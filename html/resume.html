@@ -1,0 +1,212 @@
+<div id="resume_optimizer">
+  <style>
+    #resume_optimizer {
+      max-width: 800px;
+      margin: 0 auto;
+    }
+    #resume_optimizer input:focus,
+    #resume_optimizer select:focus,
+    #resume_optimizer textarea:focus,
+    #resume_optimzer #optimizedResume {
+      outline: 2px solid #007cba;
+      outline-offset: 2px;
+    }
+
+    @keyframes spin {
+      0% {
+        transform: rotate(0deg);
+      }
+
+      100% {
+        transform: rotate(360deg);
+      }
+    }
+  </style>
+  <form id="resumeForm">
+    <label for="jobTitle">Target Job Title:</label><br />
+    <input type="text" id="jobTitle" required style="width:100%; margin-bottom:10px;"
+      aria-describedby="jobTitleHelp"><br />
+    <div id="jobTitleHelp" style="display:none;">Enter the job title you're targeting</div>
+
+    <label for="industry">Target Industry:</label><br />
+    <select id="industry" required style="width:100%; margin-bottom:10px;" aria-describedby="industryHelp">
+      <option value="">Select Industry</option>
+    </select><br />
+    <div id="industryHelp" style="display:none;">Select the industry for your target position</div>
+
+    <label for="jobDescription">Job Description (optional):</label><br />
+    <textarea id="jobDescription" rows="10" style="width:100%; margin-bottom:10px;"
+      aria-describedby="jobDescriptionHelp"></textarea><br />
+    <div id="jobDescriptionHelp" style="display:none;">Paste the job description for the position you're targeting</div>
+
+    <div id="conditionalExperienceBlock" style="display:none; margin-bottom:10px;">
+      <label>
+        <input type="checkbox" id="relevantExperience" aria-describedby="relevantExperienceHelp">
+        Add Experience Relevant to This Position under Summary
+      </label>
+      <div id="relevantExperienceHelp" style="display:none;">Check to include relevant experience for this position
+      </div>
+    </div>
+
+    <div id="userInstructionsBlock" style="display:none;">
+      <label for="customInstructions">Custom Instructions:</label><br />
+      <textarea id="customInstructions" rows="10" style="width:100%; margin-bottom:10px;"
+        aria-describedby="customInstructionsHelp"></textarea><br />
+      <div id="customInstructionsHelp" style="display:none;">Add any custom instructions for resume optimization</div>
+    </div>
+
+    <label for="resumeText">Paste Your Resume:</label><br />
+    <textarea id="resumeText" rows="10" required style="width:100%; margin-bottom:10px;"
+      aria-describedby="resumeTextHelp"></textarea><br />
+    <div id="resumeTextHelp" style="display:none;">Paste your current resume text here</div>
+
+    <button id="submit" type="submit" style="padding: 10px 20px;">Optimize My Resume</button>
+  </form>
+
+  <div id="loadingMsg" style="display:none; text-align:center; margin-top:20px; padding:20px;">
+    <div style="display:inline-block; text-align:left;">
+      <p>Optimizing your resume... This may take a few moments.</p>
+      <div
+        style="border: 4px solid #f3f3f3; border-top: 4px solid #3498db; border-radius: 50%; width: 30px; height: 30px; animation: spin 2s linear infinite; margin: 10px auto;">
+      </div>
+    </div>
+  </div>
+
+  <div id="outputArea" style="display: none; margin-top: 10px;">
+    <label for="optimizedResume">Optimized Resume:</label><br />
+    <div id="optimizedResume"
+      style="white-space: pre-wrap; margin-top: 20px; border:1px solid #ccc; padding:15px;"></div>
+  </div>
+
+  <div style="text-align:center; margin-top:15px;">
+    <button id="copyToClipboard" style="display:none; padding:10px 20px;">Copy to Clipboard</button>
+    <div id="copySuccessMsg" style="display:none; color:green; margin-top:10px;">Resume copied to clipboard!</div>
+  </div>
+</div>
+
+<script>
+  let latestResumeText = "";
+
+  const industries = [
+  'Accounting and Auditing', 'Aerospace and Defense', 'Agriculture and Food Production', 'Architecture and Design', 'Automotive', 'Beauty and Personal Care', 'Construction', 'Consulting and Professional Services', 'Consumer Electronics', 'Cybersecurity', 'Data Analytics and Artificial Intelligence', 'Education', 'Energy and Utilities', 'Engineering Services', 'Environmental Services', 'Event Management', 'Fashion and Apparel', 'Finance and Banking', 'Food and Beverage', 'Furniture and Home Goods', 'Government and Public Administration', 'Healthcare', 'Hospitality and Tourism', 'Human Resources and Staffing', 'Information Technology Services', 'Insurance', 'Legal Services', 'Manufacturing', 'Marketing and Advertising', 'Media and Entertainment', 'Mining and Natural Resources', 'Music and Performing Arts', 'Nonprofit and Social Services', 'Petroleum and Gas', 'Pharmaceuticals and Biotechnology', 'Printing and Publishing', 'Real Estate', 'Research and Development', 'Retail and E-commerce', 'Shipping and Maritime', 'Sports and Recreation', 'Technology', 'Telecommunications', 'Transportation and Logistics', 'Travel and Leisure', 'Venture Capital and Private Equity', 'Video Games and Interactive Entertainment', 'Warehousing and Supply Chain Management', 'Waste Management and Recycling'
+  ];
+
+  // Populate industry dropdown
+  function populateIndustries() {
+    const industrySelect = document.getElementById('industry');
+    industries.forEach(industry => {
+      const option = document.createElement('option');
+      option.value = industry;
+      option.textContent = industry;
+      industrySelect.appendChild(option);
+    });
+  }
+
+  // Call the function to populate industries when the DOM is ready
+  document.addEventListener('DOMContentLoaded', () => {
+    populateIndustries();
+    toggleRelevantExperience();
+    // Listen for debounced input changes
+    jobDescriptionInput.addEventListener('input', debounce(toggleRelevantExperience, 200));
+  });
+
+  const loadingMsg = document.getElementById("loadingMsg");
+  const outputArea = document.getElementById("outputArea");
+  const optimizedResume = document.getElementById("optimizedResume")
+  const copyBtn = document.getElementById("copyToClipboard");
+  const jobDescriptionInput = document.getElementById('jobDescription');
+  const relevantExperienceInput = document.getElementById('relevantExperience');
+  const userInstructionsBlock = document.getElementById('userInstructionsBlock');
+
+  const resumeRefresher = async (params) => {
+    loadingMsg.style.display = "block";
+    optimizedResume.textContent = "";
+    copyBtn.style.display = "none";
+
+    const jobTitle = document.getElementById("jobTitle").value;
+    const industry = document.getElementById("industry").value;
+    const resumeText = document.getElementById("resumeText").value;
+    const customInstructions = document.getElementById("customInstructions").value || "";
+    const jobDescription = jobDescriptionInput.value || "";
+    const relevantExperience = relevantExperienceInput.checked || false;
+
+    try {
+      const response = await fetch("https://resume-refresh-api.vercel.app/api/refresh-resume", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ 
+          jobTitle, 
+          industry, 
+          resumeText, 
+          jobDescription, 
+          relevantExperience, 
+          customInstructions 
+        })
+      });
+
+      const data = await response.json();
+      
+      if (data.updatedResume) {
+        outputArea.style.display = "block"
+        copyBtn.style.display = "inline-block";
+        userInstructionsBlock.style.display = "block";
+        optimizedResume.textContent = data.updatedResume;
+        latestResumeText = data.updatedResume;
+      } else {
+        optimizedResume.textContent = "Sorry, there was a problem processing your resume.";
+      }
+    } catch (err) {
+      console.error("Error connecting to the resume service:", err);
+      optimizedResume.textContent = "Error connecting to the resume service. Please try again later.";
+    } finally {
+      loadingMsg.style.display = "none";
+    }
+  };
+
+  document.getElementById("resumeForm").addEventListener("submit", async function (e) {
+    e.preventDefault();
+    await resumeRefresher();
+  });
+
+  const getRefreshedText = () => {
+    const optimizedResume = document.getElementById("optimizedResume");
+    return optimizedResume.textContent;
+  };
+
+  copyBtn.addEventListener("click", () => {
+    const resume = getRefreshedText();
+    const copySuccessMsg = document.getElementById("copySuccessMsg");
+    
+    navigator.clipboard.writeText(resume)
+      .then(() => {
+        // Show success message
+        copySuccessMsg.style.display = "block";
+        setTimeout(() => {
+          copySuccessMsg.style.display = "none";
+        }, 3000);
+      })
+      .catch(err => {
+        console.error("Failed to copy text: ", err);
+        alert("Failed to copy text to clipboard. Please try again.");
+      });
+  });
+
+  // Debounce utility
+  function debounce(fn, delay) {
+    let timer = null;
+    return function(...args) {
+      clearTimeout(timer);
+      timer = setTimeout(() => fn.apply(this, args), delay);
+    };
+  }
+
+  // Toggle relevant experience visibility based on job description
+  function toggleRelevantExperience() {
+    const experienceBlock = document.getElementById('conditionalExperienceBlock');
+    const hasExperience = !!jobDescriptionInput.value.trim();
+    if (!hasExperience) {
+      relevantExperienceInput.checked = false;
+    }
+    experienceBlock.style.display = hasExperience ? 'block' : 'none';
+  }
+</script>

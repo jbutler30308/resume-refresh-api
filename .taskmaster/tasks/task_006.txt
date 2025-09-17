@@ -1,0 +1,78 @@
+# Task ID: 6
+# Title: Implement Save Itinerary UI Component
+# Status: pending
+# Dependencies: 2
+# Priority: high
+# Description: Create a UI component for saving itineraries with location, date, and name inputs
+# Details:
+Update travel.html to include a save itinerary form with:
+1. Input fields for location (required), date (required), and name (optional)
+2. Validation for required fields
+3. Submit button to save the itinerary
+4. Success/error notifications
+5. Handling for duplicate entry warnings
+
+Example HTML/JS:
+```html
+<!-- Save Itinerary Form -->
+<div class="save-itinerary-form">
+  <h3>Save Itinerary</h3>
+  <form id="saveItineraryForm">
+    <div class="form-group">
+      <label for="location">Location*</label>
+      <input type="text" id="location" name="location" required>
+    </div>
+    <div class="form-group">
+      <label for="date">Date*</label>
+      <input type="date" id="date" name="date" required>
+    </div>
+    <div class="form-group">
+      <label for="name">Name (Optional)</label>
+      <input type="text" id="name" name="name">
+    </div>
+    <button type="submit" class="btn btn-primary">Save Itinerary</button>
+  </form>
+  <div id="saveResult" class="mt-3"></div>
+</div>
+
+<script>
+  document.getElementById('saveItineraryForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const location = document.getElementById('location').value;
+    const date = document.getElementById('date').value;
+    const name = document.getElementById('name').value;
+    
+    // Get current itinerary data
+    const humanReadable = document.getElementById('itineraryOutput').innerText;
+    const jsonVersion = window.currentItineraryData; // Assuming this is set elsewhere
+    
+    try {
+      const response = await fetch('/api/itineraries', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ location, date, name, humanReadable, jsonVersion })
+      });
+      
+      const data = await response.json();
+      
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to save itinerary');
+      }
+      
+      document.getElementById('saveResult').innerHTML = 
+        `<div class="alert alert-success">Itinerary saved successfully!</div>`;
+    } catch (error) {
+      document.getElementById('saveResult').innerHTML = 
+        `<div class="alert alert-danger">${error.message}</div>`;
+    }
+  });
+</script>
+```
+
+# Test Strategy:
+1. Manual testing of form submission with valid and invalid data
+2. Verify required field validation works
+3. Test error handling for duplicate entries
+4. Verify success messages appear correctly
+5. Test with various itinerary data sizes
+6. Verify form is responsive on different screen sizes

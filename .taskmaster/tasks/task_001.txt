@@ -1,0 +1,47 @@
+# Task ID: 1
+# Title: Design MongoDB Schema for Itinerary History
+# Status: pending
+# Dependencies: None
+# Priority: high
+# Description: Create a MongoDB schema for storing travel itinerary versions with appropriate fields and validation rules
+# Details:
+Design a Mongoose schema with the following fields:
+- location (String, required)
+- date (Date, required)
+- name (String, optional)
+- humanReadable (String, required) - formatted itinerary text
+- jsonVersion (Object, required) - structured itinerary data
+- createdAt (Date, auto-generated)
+
+Implement validation to ensure:
+- Unique compound index on location+date+name
+- Required fields validation
+- Appropriate data types
+
+Connect to MongoDB Atlas cluster 'carriage-house-db-00' and create appropriate collections.
+
+Example schema:
+```javascript
+const mongoose = require('mongoose');
+
+const itinerarySchema = new mongoose.Schema({
+  location: { type: String, required: true },
+  date: { type: Date, required: true },
+  name: { type: String, default: '' },
+  humanReadable: { type: String, required: true },
+  jsonVersion: { type: Object, required: true },
+  createdAt: { type: Date, default: Date.now }
+});
+
+// Create compound index for uniqueness
+itinerarySchema.index({ location: 1, date: 1, name: 1 }, { unique: true });
+
+const Itinerary = mongoose.model('Itinerary', itinerarySchema);
+```
+
+# Test Strategy:
+1. Unit test schema validation with valid and invalid data
+2. Test uniqueness constraint with duplicate entries
+3. Verify required fields trigger appropriate validation errors
+4. Test connection to MongoDB Atlas cluster
+5. Verify indexes are created correctly

@@ -1,0 +1,52 @@
+# Task ID: 5
+# Title: Implement Delete Itinerary API Endpoint
+# Status: pending
+# Dependencies: 1, 4
+# Priority: medium
+# Description: Create a REST API endpoint to delete a specific itinerary version by ID
+# Details:
+Implement a DELETE endpoint at '/api/itineraries/:id' that:
+1. Accepts an itinerary ID as a path parameter
+2. Deletes the specified itinerary from the database
+3. Returns appropriate success/error responses
+4. Requires authentication as a Travel Coordinator
+
+Example implementation:
+```javascript
+app.delete('/api/itineraries/:id', authenticateTravelCoordinator, async (req, res) => {
+  try {
+    const { id } = req.params;
+    
+    // Validate ID format
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({ error: 'Invalid itinerary ID format' });
+    }
+    
+    // Find and delete itinerary
+    const result = await Itinerary.findByIdAndDelete(id);
+    
+    // Handle not found
+    if (!result) {
+      return res.status(404).json({ error: 'Itinerary not found' });
+    }
+    
+    return res.status(200).json({ message: 'Itinerary deleted successfully' });
+  } catch (error) {
+    return res.status(500).json({ error: error.message });
+  }
+});
+
+// Authentication middleware (to be implemented)
+function authenticateTravelCoordinator(req, res, next) {
+  // Check if user is authenticated and has Travel Coordinator role
+  // If not, return 401 or 403
+  // If yes, call next()
+}
+
+# Test Strategy:
+1. Integration test with valid ID to verify successful deletion
+2. Test with invalid ID format to verify 400 response
+3. Test with non-existent ID to verify 404 response
+4. Verify deleted itinerary is no longer retrievable
+5. Test authentication requirements
+6. Verify response time is under 2 seconds

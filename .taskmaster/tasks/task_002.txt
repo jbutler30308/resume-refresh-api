@@ -1,0 +1,59 @@
+# Task ID: 2
+# Title: Implement Save Itinerary API Endpoint
+# Status: pending
+# Dependencies: 1
+# Priority: high
+# Description: Create a REST API endpoint to save new itinerary versions with validation for required fields and uniqueness
+# Details:
+Implement a POST endpoint at '/api/itineraries' that:
+1. Accepts JSON payload with location, date, name, humanReadable, and jsonVersion
+2. Validates required fields and data types
+3. Checks for duplicates based on location+date+name
+4. Saves valid itineraries to MongoDB
+5. Returns appropriate success/error responses
+
+Example implementation:
+```javascript
+app.post('/api/itineraries', async (req, res) => {
+  try {
+    const { location, date, name, humanReadable, jsonVersion } = req.body;
+    
+    // Validate required fields
+    if (!location || !date || !humanReadable || !jsonVersion) {
+      return res.status(400).json({ error: 'Missing required fields' });
+    }
+    
+    // Create new itinerary
+    const itinerary = new Itinerary({
+      location,
+      date,
+      name: name || '',
+      humanReadable,
+      jsonVersion
+    });
+    
+    // Save to database
+    await itinerary.save();
+    
+    return res.status(201).json({ 
+      message: 'Itinerary saved successfully', 
+      id: itinerary._id 
+    });
+  } catch (error) {
+    // Handle duplicate key error
+    if (error.code === 11000) {
+      return res.status(409).json({ 
+        error: 'An itinerary with this location, date, and name already exists' 
+      });
+    }
+    return res.status(500).json({ error: error.message });
+  }
+});
+
+# Test Strategy:
+1. Integration test with valid payload to verify successful save
+2. Test with missing required fields to verify 400 response
+3. Test with duplicate entries to verify 409 response
+4. Verify saved data in MongoDB matches input
+5. Load test with multiple concurrent requests
+6. Verify response time is under 2 seconds
