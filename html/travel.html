@@ -63,6 +63,11 @@
     <div id="groupDetailsHelp" style="display:none;">Enter details about the group (ages, preferences, etc.)</div>
 
     <button id="submit" type="submit" style="padding: 10px 20px;">Get My Travel Plan</button>
+    <div id="revisionControls" style="display:none; margin-top:20px;">
+      <label for="refineInput">Refine Itinerary:</label><br />
+      <textarea id="refineInput" rows="3" style="width:100%; margin-bottom:10px;"></textarea><br />
+      <button id="reviseBtn" type="button" style="padding: 8px 18px;">Update Itinerary</button>
+    </div>
   </form>
 
   <div id="loadingMsg" style="display:none; text-align:center; margin-top:20px; padding:20px;">
@@ -74,22 +79,32 @@
     </div>
   </div>
 
+  <div style="text-align:center; margin-top:15px;">
+    <button id="copyToClipboard" style="display:none; padding:10px 20px;">Copy to Clipboard</button>
+    <div id="copySuccessMsg" style="display:none; color:green; margin-top:10px;">Travel plan copied to clipboard!</div>
+  </div>
+
   <div id="outputArea" style="display: none; margin-top: 10px;">
-    <label for="travelPlanOutput">Your Travel Plan:</label><br />
+    <!-- <label for="travelPlanOutput">Your Travel Plan:</label><br /> -->
     <div id="travelPlanOutput" style="margin-top: 20px; border:1px solid #ccc; padding:15px;"></div>
     <label for="verificationOutput" style="margin-top:20px; display:block;">Verification:</label> <button id="toggleVerification" type="button" class="toggle-button" style="margin-left: 10px;">Show</button>
     <div id="verificationOutput" style="display: none; margin-top: 10px; border:1px solid #eee; padding:12px; background:#fafafa;">
     </div>
   </div>
-
-  <div style="text-align:center; margin-top:15px;">
-    <button id="copyToClipboard" style="display:none; padding:10px 20px;">Copy to Clipboard</button>
-    <div id="copySuccessMsg" style="display:none; color:green; margin-top:10px;">Travel plan copied to clipboard!</div>
-  </div>
 </div>
 
 <script>
+
+  // --- Conversation History State ---
+  /**
+   * @typedef {Object} Message
+   * @property {'system'|'user'|'assistant'} role
+   * @property {string} content
+   */
+  /** @type {Message[]} */
+  let conversation = [];
   let latestTravelPlan = "";
+  let inRevisionMode = false;
 
   const loadingMsg = document.getElementById("loadingMsg");
   const outputArea = document.getElementById("outputArea");
@@ -97,17 +112,60 @@
   const verificationOutput = document.getElementById("verificationOutput");
   const copyBtn = document.getElementById("copyToClipboard");
 
-  const travelPlanner = async () => {
+  // Helper: Build initial conversation from form
+  function buildInitialConversation(formData) {
+    return [
+      {
+        role: 'system',
+        content: 'You are a travel planner. Generate detailed, feasible itineraries.'
+      },
+      {
+        role: 'user',
+        content: `Generate a travel plan based on these details: ${JSON.stringify(formData)}`
+      }
+    ];
+  }
+
+  // Helper: Enter revision mode UI
+  function enterRevisionMode() {
+    inRevisionMode = true;
+    document.getElementById('revisionControls').style.display = 'block';
+    // don't we want to disable this???
+    // document.getElementById('submit').textContent = 'Update Itinerary';
+    document.getElementById('submit').disabled = true;
+    document.getElementById('destination').disabled = true;
+    document.getElementById('startDate').disabled = true;
+    document.getElementById('endDate').disabled = true;
+    document.getElementById('groupSize').disabled = false;
+    document.getElementById('groupDetails').disabled = false;
+  }
+
+  // Helper: Reset revision mode UI
+  function resetRevisionMode() {
+    inRevisionMode = false;
+    document.getElementById('revisionControls').style.display = 'none';
+    document.getElementById('submit').textContent = 'Get My Travel Plan';
+    document.getElementById('destination').disabled = false;
+    document.getElementById('startDate').disabled = false;
+    document.getElementById('endDate').disabled = false;
+    document.getElementById('groupSize').disabled = false;
+    document.getElementById('groupDetails').disabled = false;
+    document.getElementById('refineInput').value = '';
+    conversation = [];
+  }
+
+  // --- Main Planner Logic ---
+  const travelPlanner = async (isRevision = false) => {
     loadingMsg.style.display = "block";
     travelPlanOutput.innerHTML = "";
     if (verificationOutput) verificationOutput.innerHTML = "";
     copyBtn.style.display = "none";
 
-    const destination = document.getElementById("destination").value.trim();
-    const startDate = document.getElementById("startDate").value.trim();
-    const endDate = document.getElementById("endDate").value.trim();
-    const groupSize = document.getElementById("groupSize").value;
-    const groupDetails = document.getElementById("groupDetails").value;
+  const destination = document.getElementById("destination").value.trim();
+  const startDate = document.getElementById("startDate").value.trim();
+  const endDate = document.getElementById("endDate").value.trim();
+  const groupSize = document.getElementById("groupSize").value;
+  const groupDetails = document.getElementById("groupDetails").value;
     // Validation
     const isValidForm = (destination, startDate, endDate, groupSize) => {
       return (
@@ -120,7 +178,8 @@
       );
     };
 
-    if (!isValidForm(destination, startDate, endDate, groupSize)) {
+
+    if (!isRevision && !isValidForm(destination, startDate, endDate, groupSize)) {
       travelPlanOutput.innerHTML = "Please fill out all fields correctly.";
       outputArea.style.display = "block";
       loadingMsg.style.display = "none";
@@ -129,16 +188,34 @@
     }
 
     try {
-      // const response = await fetch("https://resume-refresh-api.vercel.app/api/travel", {
-      const response = await fetch("http://localhost:3001/api/travel", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
+      let payload;
+      if (!isRevision) {
+        // Initial generation: build conversation from form
+        const formData = {
           destination,
           dates: [startDate, endDate],
           groupSize: Number(groupSize),
           groupDetails
-        })
+        };
+        conversation = buildInitialConversation(formData);
+        payload = { conversation };
+      } else {
+        // Revision: add user instruction to conversation
+        const instruction = document.getElementById('refineInput').value.trim();
+        if (!instruction) {
+          loadingMsg.style.display = "none";
+          return;
+        }
+        conversation.push({ role: 'user', content: instruction });
+        payload = { conversation };
+      }
+
+      // NOTE: since we manually "deploy" to Squarespace we manually change for local dev sigh
+      const response = await fetch("https://resume-refresh-api.vercel.app/api/travel", {
+      // const response = await fetch("http://localhost:3000/api/travel", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
       });
 
       const data = await response.json();
@@ -150,6 +227,14 @@
         if (verificationOutput && data.verification) {
           verificationOutput.innerHTML = data.verification;
         }
+        // Add assistant response to conversation
+        if (data.rawPlan) {
+          conversation.push({ role: 'assistant', content: data.rawPlan });
+        }
+        if (!inRevisionMode) {
+          enterRevisionMode();
+        }
+        document.getElementById('refineInput').value = '';
       } else {
         travelPlanOutput.innerHTML = "Sorry, there was a problem processing your travel plan.";
         if (verificationOutput) verificationOutput.innerHTML = "";
@@ -163,9 +248,15 @@
     }
   };
 
+
   document.getElementById("travelForm").addEventListener("submit", async function (e) {
     e.preventDefault();
-    await travelPlanner();
+    await travelPlanner(false);
+  });
+
+  // Revision button handler
+  document.getElementById('reviseBtn').addEventListener('click', async function () {
+    await travelPlanner(true);
   });
 
   document.getElementById("toggleVerification").addEventListener("click", function() {
@@ -178,7 +269,8 @@
   const getTravelPlanText = () => {
     // Strip HTML tags for clipboard copy
     const tempDiv = document.createElement('div');
-    tempDiv.innerHTML = travelPlanOutput.innerHTML;
+    const travelOutput = document.getElementById("travelOutput");
+    tempDiv.innerHTML = travelOutput.innerHTML;
     return tempDiv.textContent || tempDiv.innerText || "";
   };
 

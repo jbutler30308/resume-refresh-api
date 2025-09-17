@@ -51,8 +51,7 @@ export function renderContactInfo(item) {
 }
 
 export function renderItemFooter(item) {
-  const lastCheckedHtml = item.last_checked ? ` (last checked: ${escapeHtml(item.last_checked)})` : '';
-  return `<div class="foot small-muted">Confidence: ${escapeHtml(String(item.confidence || 'n/a'))}${lastCheckedHtml} ${item.source_urls ? renderSourceLinks(item.source_urls) : ''}</div>`;
+  return `<div class="foot small-muted">Confidence: ${escapeHtml(String(item.confidence || 'n/a'))} ${item.source_urls ? renderSourceLinks(item.source_urls) : ''}</div>`;
 }
 
 export function renderItem(it) {
@@ -90,10 +89,9 @@ function renderContactsSection(vcards) {
     out += `<div class="contact-card">
         <div class="name">${escapeHtml(c.name)}</div>
         <div class="tel">${c.tel ? `<a href="tel:${escapeHtml(tel)}">${escapeHtml(c.tel)}</a>` : '—'}</div>
-        <div class="email">${c.email ? `<a href="mailto:${escapeHtml(c.email)}">${escapeHtml(c.email)}</a>` : '—'}</div>
+        ${c.email ? `<div class="email"><a href="mailto:${escapeHtml(c.email)}">${escapeHtml(c.email)}</a></div>` : ''}
         ${websiteHtml}
         ${noteHtml}
-        <div class="vc-download"><a href="/vcf/${encodeURIComponent(slug)}" target="_blank">Download vCard</a></div>
       </div>`;
   });
   out += `</section>`;
@@ -165,7 +163,7 @@ export const parseResponse = (travelPlan) => {
   const sourcesHtml = renderSourcesSection(travelPlan.meta?.sources);
 
   // Combine and sanitize
-  const combined = `<div class="travel-output">${metaHtml}${reportHtml}${jsonHtml}${sourcesHtml}</div>`;
+  const combined = `<div class="travel-output" id="travelOutput">${metaHtml}${reportHtml}${jsonHtml}${sourcesHtml}</div>`;
   logger.info('combined: %j', combined);
 
   const safe = sanitizeHtml(combined, {
@@ -173,7 +171,7 @@ export const parseResponse = (travelPlan) => {
     allowedAttributes: {
       a: ['class', 'href', 'target', 'rel'],
       article: ['class', 'id'],
-      div: ['class'],
+      div: ['class', 'id'],
       section: ['class']
     },
     allowedSchemesByTag: {
@@ -185,6 +183,7 @@ export const parseResponse = (travelPlan) => {
     .travel-output { font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial; color: #0f172a; }
     .travel-output .card { border-radius:6px; padding:12px; margin-bottom:10px; background:#fff; }
     .travel-output .small-muted { color:#6b7280; font-size:0.95rem; }
+    .contact-card { margin-bottom: 18px; }
   </style>`;
 
   return (css + safe);

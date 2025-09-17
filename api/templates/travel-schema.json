@@ -112,9 +112,6 @@
             "confidence": {
               "type": "number"
             },
-            "last_checked": {
-              "type": "string"
-            },
             "source_urls": {
               "type": "array",
               "items": {
@@ -136,7 +133,6 @@
             "currency",
             "price_extraction_note",
             "confidence",
-            "last_checked",
             "source_urls"
           ]
         }
