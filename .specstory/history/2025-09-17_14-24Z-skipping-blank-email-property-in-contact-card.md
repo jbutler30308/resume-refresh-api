@@ -149,3 +149,214 @@ _**Assistant**_
 
 ---
 
+_**User (2025-09-17 15:55Z)**_
+
+It still seems to be in commit `a4f57c7ae495403d0534a1aede75b5072d6fdf11` so I need to remove it from there.
+
+---
+
+_**Assistant**_
+
+To remove `mcp.json` from commit `a4f57c7ae495403d0534a1aede75b5072d6fdf11` (the previous commit), you need to rewrite history. The safest way for a single recent commit is to use an interactive rebase and amend the commit:
+
+1. Run: `git rebase -i a4f57c7ae495403d0534a1aede75b5072d6fdf11^`
+2. Mark the commit as `edit`.
+3. When prompted, run: `git rm --cached .gemini/mcp.json`
+4. Amend the commit: `git commit --amend --no-edit`
+5. Continue the rebase: `git rebase --continue`
+
+Would you like me to run these commands for you, or would you prefer the exact step-by-step instructions to do it manually?
+
+---
+
+_**User (2025-09-17 15:56Z)**_
+
+The exact step-by-step instructions
+
+---
+
+_**Assistant**_
+
+Here are the exact step-by-step instructions to remove `mcp.json` from commit `a4f57c7ae495403d0534a1aede75b5072d6fdf11` using interactive rebase:
+
+1. **Start the interactive rebase**  
+   You already ran:  
+   ```
+   git rebase -i a4f57c7ae495403d0534a1aede75b5072d6fdf11
+   ```
+   In the editor, you should have marked the commit as `edit`.
+
+2. **Remove the file from the commit (but keep it locally):**  
+   ```
+   git rm --cached .gemini/mcp.json
+   ```
+
+3. **Amend the commit (keep the same message):**  
+   ```
+   git commit --amend --no-edit
+   ```
+
+4. **Continue the rebase:**  
+   ```
+   git rebase --continue
+   ```
+
+5. **(Optional, but recommended) Force-push to update the remote branch:**  
+   ```
+   git push --force
+   ```
+
+**Note:**  
+- After this, `mcp.json` will be removed from that commit and all future history.
+- The file will remain on your local disk.
+- If you have collaborators, let them know to re-clone or rebase their branches.
+
+Let me know if you need help with any step!
+
+---
+
+_**User (2025-09-17 15:58Z)**_
+
+> In the editor, you should have marked the commit as edit.
+
+I did not know how to mark it, so I exited the editor. Explain this step, please.
+
+---
+
+_**Assistant**_
+
+When you run `git rebase -i <commit>`, your default text editor opens a list of commits like this:
+
+```
+pick a4f57c7 feat(revision): complete itinerary revision feature and update UI polish
+pick 59b80c0 chore(secrets): remove .gemini/mcp.json from git tracking and add to .gitignore
+```
+
+To "mark a commit as edit":
+
+1. Find the line for the commit you want to change (in your case, `a4f57c7`).
+2. Change the word `pick` at the start of that line to `edit` (or just `e`):
+
+```
+edit a4f57c7 feat(revision): complete itinerary revision feature and update UI polish
+pick 59b80c0 chore(secrets): remove .gemini/mcp.json from git tracking and add to .gitignore
+```
+
+3. Save and close the editor (`:wq` in vim, or just save and close in VS Code or nano).
+
+Git will then pause at that commit so you can make changes (like removing a file).
+
+If you exited without saving, just re-run the rebase command and follow these steps. Let me know if you need help with your editor!
+
+---
+
+_**User (2025-09-17 15:59Z)**_
+
+That line does not appear. What I get is:
+
+pick 59b80c0 chore(secrets): remove .gemini/mcp.json from git tracking and add to .gitignore
+pick f086c37 chore(.gitignore): actually add it
+
+# Rebase a4f57c7..f086c37 onto a4f57c7 (2 commands)
+#
+
+---
+
+_**Assistant**_
+
+The reason you don’t see the commit you want to edit (`a4f57c7`) is because `git rebase -i a4f57c7` starts the rebase *after* that commit, not including it.
+
+To edit `a4f57c7`, you need to rebase from its parent. Here’s how:
+
+1. **Find the parent commit of `a4f57c7`:**
+   - Run:  
+     ```
+     git log --oneline
+     ```
+   - Note the commit hash just before `a4f57c7`.
+
+2. **Start the rebase from the parent:**
+   - Run:  
+     ```
+     git rebase -i <parent-hash>
+     ```
+   - Now, in the editor, you will see a line for `a4f57c7`. Change `pick` to `edit` for that line.
+
+3. **Continue with the previous instructions** (remove the file, amend, continue rebase).
+
+Let me know if you need help finding the parent commit or with any step!   - Now, in the editor, you will see a line for `a4f57c7`. Change `pick` to `edit` for that line.
+
+3. **Continue with the previous instructions** (remove the file, amend, continue rebase).
+
+Let me know if you need help finding the parent commit or with any step!
+
+---
+
+_**User (2025-09-17 16:02Z)**_
+
+After `rebase --continue` I got the following (I am including previous interaction):
+
+ git rm --cached .gemini/mcp.json
+rm '.gemini/mcp.json'
+(base) ➜  resume-refresh-api git:(a4f57c7) ✗ git commit --amend --no-edit
+[detached HEAD 30e0849] feat(revision): complete itinerary revision feature and update UI polish
+ Date: Wed Sep 17 11:41:01 2025 -0400
+ 14 files changed, 855 insertions(+), 205 deletions(-)
+ delete mode 100644 .gemini/mcp.json
+ create mode 100644 .specstory/history/2025-09-17_03-02Z-itinerary-revision-feature-prd-parsing-inquiry.md
+ create mode 100644 .specstory/history/2025-09-17_14-24Z-skipping-blank-email-property-in-contact-card.md
+ create mode 100644 docs/0_backlog/revision_feature_backlog.md
+ create mode 100644 docs/1_planning/revision_feature.prd.md
+ create mode 100644 docs/reference/prompts/revision_prompt.md
+(base) ➜  resume-refresh-api git:(30e0849) ✗ git rebase --continue
+The previous cherry-pick is now empty, possibly due to conflict resolution.
+If you wish to commit it anyway, use:
+
+    git commit --allow-empty
+
+Otherwise, please use 'git rebase --skip'
+interactive rebase in progress; onto 8cb3fba
+Last commands done (2 commands done):
+   edit a4f57c7 feat(revision): complete itinerary revision feature and update UI polish
+   pick 59b80c0 chore(secrets): remove .gemini/mcp.json from git tracking and add to .gitignore
+Next command to do (1 remaining command):
+   pick f086c37 chore(.gitignore): actually add it
+  (use "git rebase --edit-todo" to view and edit)
+You are currently rebasing branch 'main' on '8cb3fba'.
+  (all conflicts fixed: run "git rebase --continue")
+
+Untracked files:
+  (use "git add <file>..." to include in what will be committed)
+        .gemini/mcp.json
+
+nothing added to commit but untracked files present (use "git add" to track)
+Could not apply 59b80c0... chore(secrets): remove .gemini/mcp.json from git tracking and add to .gitignore
+
+---
+
+_**Assistant**_
+
+You did everything correctly! Here’s what happened and what to do next:
+
+- You edited the earlier commit to remove `mcp.json`.
+- Now, when git tries to apply the later commit (`59b80c0 chore(secrets): remove `mcp.json` from git tracking and add to .gitignore`), it finds nothing to do (the file is already gone), so the commit is empty.
+
+**What to do:**
+
+1. Run:
+   ```
+   git rebase --skip
+   ```
+   This will skip the now-empty commit and continue the rebase.
+
+2. If there are more steps, follow the prompts (usually just `git rebase --continue` or another `--skip` if more empty commits).
+
+3. When the rebase is done, force-push to update the remote:
+   ```
+   git push --force
+   ```
+
+Let me know if you hit any more issues!
+
+---
+
