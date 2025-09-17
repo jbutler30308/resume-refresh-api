@@ -1,3 +1,5 @@
+# Ignore Gemini MCP config
+.gemini/mcp.json
 .DS_Store
 
 node_modules/
