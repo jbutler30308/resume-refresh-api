@@ -235,3 +235,28 @@ Let me know your preference and I’ll proceed accordingly.
 
 ---
 
+_**User (2025-09-17 19:56Z)**_
+
+I have added the .png files as well as the markdown source. Please commit the changes. Here's the staged files:
+
+git status --porcelain
+M  .specstory/history/2025-09-17_14-24Z-skipping-blank-email-property-in-contact-card.md
+A  .specstory/history/2025-09-17_19-39Z-data-flow-diagram-options-for-travel-and-resume-features.md
+A  docs/diagrams/data-flow-diagrams.md
+A  docs/diagrams/intinerary-data-flow.png
+A  docs/diagrams/resume-data-flow.png
+
+---
+
+_**Assistant**_
+
+The changes have been committed:
+
+- Added PNG data-flow diagrams and markdown source in ``
+- Included related Specstory history entries
+- Updated the contact card specstory
+
+Let me know if you need to push these changes or take further action!
+
+---
+
